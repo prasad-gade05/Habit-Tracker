@@ -1,7 +1,16 @@
 import React, { useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { format, parseISO, eachMonthOfInterval, startOfYear, endOfYear } from "date-fns";
-import { getCompletionPercentageForDate, getLast365Days } from "../utils/dateUtils";
+import {
+  format,
+  parseISO,
+  eachMonthOfInterval,
+  startOfYear,
+  endOfYear,
+} from "date-fns";
+import {
+  getCompletionPercentageForDate,
+  getLast365Days,
+} from "../utils/dateUtils";
 
 const MonthlyCompletionHeatmap: React.FC = () => {
   const { habits, completions } = useHabitStore();
@@ -18,10 +27,10 @@ const MonthlyCompletionHeatmap: React.FC = () => {
 
     return months.map((month) => {
       // Get all days in this month from the last 365 days
-      const monthDays = last365Days.filter(day => {
+      const monthDays = last365Days.filter((day) => {
         const dayDate = parseISO(day);
         return (
-          dayDate.getMonth() === month.getMonth() && 
+          dayDate.getMonth() === month.getMonth() &&
           dayDate.getFullYear() === month.getFullYear()
         );
       });
@@ -32,26 +41,29 @@ const MonthlyCompletionHeatmap: React.FC = () => {
           year: format(month, "yyyy"),
           percentage: 0,
           count: 0,
-          total: 0
+          total: 0,
         };
       }
 
       // Calculate completion percentages for each day in the month
-      const percentages = monthDays.map(day => 
+      const percentages = monthDays.map((day) =>
         getCompletionPercentageForDate(habits, completions, day)
       );
 
       // Calculate average percentage for the month
-      const averagePercentage = percentages.length > 0 
-        ? Math.round(percentages.reduce((sum, p) => sum + p, 0) / percentages.length)
-        : 0;
+      const averagePercentage =
+        percentages.length > 0
+          ? Math.round(
+              percentages.reduce((sum, p) => sum + p, 0) / percentages.length
+            )
+          : 0;
 
       return {
         month: format(month, "MMM"),
         year: format(month, "yyyy"),
         percentage: averagePercentage,
-        count: percentages.filter(p => p > 0).length,
-        total: monthDays.length
+        count: percentages.filter((p) => p > 0).length,
+        total: monthDays.length,
       };
     });
   }, [habits, completions]);
@@ -70,7 +82,7 @@ const MonthlyCompletionHeatmap: React.FC = () => {
       <h2 className="text-xl font-semibold text-foreground mb-4">
         Monthly Completion Overview
       </h2>
-      
+
       <div className="mb-4">
         <p className="text-sm text-muted-foreground">
           Your habit completion rates by month
@@ -80,8 +92,10 @@ const MonthlyCompletionHeatmap: React.FC = () => {
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {heatmapData.map((monthData, index) => (
           <div key={index} className="text-center">
-            <div 
-              className={`w-full h-12 rounded-md flex items-center justify-center ${getColorClass(monthData.percentage)}`}
+            <div
+              className={`w-full h-12 rounded-md flex items-center justify-center ${getColorClass(
+                monthData.percentage
+              )}`}
               title={`${monthData.month} ${monthData.year}: ${monthData.percentage}% completion`}
             >
               <span className="text-xs font-medium text-foreground">

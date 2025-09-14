@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from "react";
-import { Calendar } from "@/components/ui/calendar";
 import { useHabitStore } from "../stores/habitStore";
 import { Habit, Completion } from "../utils/dateUtils";
 import {
@@ -25,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import CustomCalendar from "./CustomCalendar";
 
 const CalendarView: React.FC = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -46,13 +46,11 @@ const CalendarView: React.FC = () => {
     : 0;
 
   // Handle date selection
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleDateSelect = (date: Date) => {
     setDate(date);
-    if (date) {
-      const formattedDate = format(date, "yyyy-MM-dd");
-      setSelectedDate(formattedDate);
-      setIsDialogOpen(true);
-    }
+    const formattedDate = format(date, "yyyy-MM-dd");
+    setSelectedDate(formattedDate);
+    setIsDialogOpen(true);
   };
 
   // Handle habit completion toggle
@@ -91,46 +89,6 @@ const CalendarView: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  // Modified Calendar component with custom styling
-  const StyledCalendar = useMemo(() => {
-    return (
-      <Calendar
-        mode="single"
-        selected={date}
-        onSelect={handleDateSelect}
-        className="rounded-lg border border-border"
-        modifiers={{
-          completed: (date) => {
-            const formattedDate = format(date, "yyyy-MM-dd");
-            const percentage = getCompletionPercentageForDate(
-              habits,
-              completions,
-              formattedDate
-            );
-            return percentage > 0 && percentage < 100;
-          },
-          perfect: (date) => {
-            const formattedDate = format(date, "yyyy-MM-dd");
-            const percentage = getCompletionPercentageForDate(
-              habits,
-              completions,
-              formattedDate
-            );
-            return percentage === 100;
-          },
-        }}
-        modifiersClassNames={{
-          completed: "border border-dashed border-secondary",
-          perfect: "border-2 border-accent",
-        }}
-        classNames={{
-          day: "rounded-md bg-surface",
-          day_selected: "bg-success text-primary",
-        }}
-      />
-    );
-  }, [date, habits, completions]);
-
   return (
     <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
       <div className="mb-5">
@@ -142,28 +100,7 @@ const CalendarView: React.FC = () => {
         </p>
       </div>
 
-      {StyledCalendar}
-
-      {/* Calendar Legend */}
-      <div className="mt-5 flex flex-wrap items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-md bg-surface border border-border mr-2"></div>
-            <span className="text-xs text-muted-foreground">Default</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-md bg-success border-2 border-accent mr-2"></div>
-            <span className="text-xs text-muted-foreground">100% Complete</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-3 h-3 rounded-md bg-surface border border-dashed border-secondary mr-2"></div>
-            <span className="text-xs text-muted-foreground">Partial</span>
-          </div>
-        </div>
-        <div className="text-xs text-muted-foreground mt-2 md:mt-0">
-          Click dates to view details
-        </div>
-      </div>
+      <CustomCalendar onDateSelect={handleDateSelect} selectedDate={date} />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
