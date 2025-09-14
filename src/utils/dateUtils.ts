@@ -78,18 +78,18 @@ export const getCompletionPercentageForDate = (
   date: string
 ): number => {
   // Filter habits that are active on the given date
-  const activeHabits = habits.filter(habit => 
+  const activeHabits = habits.filter((habit) =>
     isHabitActiveOnDate(habit, parseISO(date))
   );
-  
+
   if (activeHabits.length === 0) return 0;
 
   const completionsForDate = getCompletionsForDate(completions, date);
   // Count only completions for active habits
-  const completedHabits = activeHabits.filter(habit => 
+  const completedHabits = activeHabits.filter((habit) =>
     isHabitCompletedOnDate(habit.id, completions, date)
   ).length;
-  
+
   const totalHabits = activeHabits.length;
 
   return Math.round((completedHabits / totalHabits) * 100);

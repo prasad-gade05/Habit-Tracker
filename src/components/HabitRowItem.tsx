@@ -56,7 +56,9 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
       <div
         className={`flex items-center p-3 rounded-lg transition-all duration-200 ${
           isCompleted ? "bg-secondary/50" : "hover:bg-secondary/30"
-        } ${!isHabitActiveToday ? "bg-gray-100 dark:bg-gray-800 opacity-60" : ""}`}
+        } ${
+          !isHabitActiveToday ? "bg-gray-100 dark:bg-gray-800 opacity-60" : ""
+        }`}
         style={{
           borderLeft: habit.color
             ? `4px solid ${habit.color}`
@@ -80,7 +82,7 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
         >
           {isCompleted && <Check className="w-3 h-3 text-white" />}
         </div>
-        <div 
+        <div
           className={`flex-1 ${
             isHabitActiveToday ? "cursor-pointer" : "cursor-not-allowed"
           }`}

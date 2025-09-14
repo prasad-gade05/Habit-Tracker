@@ -1,7 +1,20 @@
 import React, { useState } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addMonths, subMonths, isSameMonth, isSameDay } from "date-fns";
-import { getCompletionPercentageForDate, getCompletionsForDate } from "../utils/dateUtils";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addMonths,
+  subMonths,
+  isSameMonth,
+  isSameDay,
+} from "date-fns";
+import {
+  getCompletionPercentageForDate,
+  getCompletionsForDate,
+} from "../utils/dateUtils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,14 +24,17 @@ interface CustomCalendarProps {
   selectedDate?: Date;
 }
 
-const CustomCalendar: React.FC<CustomCalendarProps> = ({ onDateSelect, selectedDate }) => {
+const CustomCalendar: React.FC<CustomCalendarProps> = ({
+  onDateSelect,
+  selectedDate,
+}) => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const { habits, completions } = useHabitStore();
 
   // Get the first day of the month and the last day of the month
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
-  
+
   // Get the start of the first week of the month and the end of the last week of the month
   const startDate = startOfWeek(monthStart);
   const endDate = endOfWeek(monthEnd);
@@ -32,10 +48,14 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ onDateSelect, selectedD
     for (let i = 0; i < 7; i++) {
       const formattedDate = format(day, "yyyy-MM-dd");
       const dayCompletions = getCompletionsForDate(completions, formattedDate);
-      const completionPercentage = getCompletionPercentageForDate(habits, completions, formattedDate);
-      const completionCount = habits.filter(habit => {
+      const completionPercentage = getCompletionPercentageForDate(
+        habits,
+        completions,
+        formattedDate
+      );
+      const completionCount = habits.filter((habit) => {
         // Count habits that are actually completed (not just inactive)
-        return dayCompletions.some(c => c.habitId === habit.id);
+        return dayCompletions.some((c) => c.habitId === habit.id);
       }).length;
 
       days.push({
@@ -126,22 +146,32 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ onDateSelect, selectedD
                 onClick={() => handleDateClick(dayData.date)}
                 className={cn(
                   "relative h-8 w-full text-xs transition-colors focus:outline-none",
-                  dayData.isCurrentMonth ? "text-foreground" : "text-muted-foreground/30",
-                  dayData.isToday && !dayData.isSelected ? "bg-accent/30 rounded" : "",
-                  dayData.isSelected ? "bg-primary text-primary-foreground rounded" : "",
-                  !dayData.isCurrentMonth && !dayData.isSelected ? "hover:bg-secondary/20" : "",
-                  dayData.isCurrentMonth && !dayData.isSelected ? "hover:bg-secondary/40" : ""
+                  dayData.isCurrentMonth
+                    ? "text-foreground"
+                    : "text-muted-foreground/30",
+                  dayData.isToday && !dayData.isSelected
+                    ? "bg-accent/30 rounded"
+                    : "",
+                  dayData.isSelected
+                    ? "bg-primary text-primary-foreground rounded"
+                    : "",
+                  !dayData.isCurrentMonth && !dayData.isSelected
+                    ? "hover:bg-secondary/20"
+                    : "",
+                  dayData.isCurrentMonth && !dayData.isSelected
+                    ? "hover:bg-secondary/40"
+                    : ""
                 )}
               >
                 {/* Date number */}
                 <div className="absolute top-0.5 left-0.5">
                   {format(dayData.date, "d")}
                 </div>
-                
+
                 {/* Completion indicator - only show for current month */}
                 {dayData.completionCount > 0 && dayData.isCurrentMonth && (
                   <div className="absolute bottom-0.5 right-0.5 flex items-center justify-center">
-                    <div 
+                    <div
                       className={cn(
                         "h-3 w-3 rounded-full flex items-center justify-center",
                         getCompletionColor(dayData.completionPercentage)

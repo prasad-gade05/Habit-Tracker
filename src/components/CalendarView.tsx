@@ -122,11 +122,11 @@ const CalendarView: React.FC = () => {
             {habits.length > 0 ? (
               habits.map((habit) => {
                 // Check if habit is active on the selected date
-                const isHabitActiveOnSelectedDate = selectedDate 
-                  ? isHabitActiveOnDate(habit, parseISO(selectedDate)) 
+                const isHabitActiveOnSelectedDate = selectedDate
+                  ? isHabitActiveOnDate(habit, parseISO(selectedDate))
                   : false;
                 const habitCompleted = isHabitCompleted(habit.id);
-                
+
                 return (
                   <div
                     key={habit.id}
@@ -152,13 +152,17 @@ const CalendarView: React.FC = () => {
                       <label
                         htmlFor={habit.id}
                         className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
-                          !isHabitActiveOnSelectedDate ? "text-gray-500 dark:text-gray-400" : ""
+                          !isHabitActiveOnSelectedDate
+                            ? "text-gray-500 dark:text-gray-400"
+                            : ""
                         }`}
                       >
                         <div className="flex items-center space-x-2">
                           <div
                             className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: habit.color || "#3B82F6" }}
+                            style={{
+                              backgroundColor: habit.color || "#3B82F6",
+                            }}
                           />
                           <span>{habit.name}</span>
                         </div>
@@ -197,8 +201,8 @@ const CalendarView: React.FC = () => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This will permanently delete "{habit.name}" and all
-                              of its tracked history. This action cannot be
+                              This will permanently delete "{habit.name}" and
+                              all of its tracked history. This action cannot be
                               undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>

@@ -15,7 +15,7 @@ import AppShell from "./components/AppShell";
 const App: React.FC = () => {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <Router>
+      <Router basename="/Habit-Tracker/">
         <div className="flex flex-col min-h-screen">
           <main className="flex-1">
             <Routes>

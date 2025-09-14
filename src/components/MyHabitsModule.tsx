@@ -82,7 +82,10 @@ const MyHabitsModule: React.FC = () => {
           {habits.map((habit: Habit) => {
             const isCompleted = isHabitCompletedOnDate(habit.id, today);
             // Check if habit is active today
-            const isHabitActiveToday = isHabitActiveOnDate(habit, parseISO(today));
+            const isHabitActiveToday = isHabitActiveOnDate(
+              habit,
+              parseISO(today)
+            );
             const streak = calculateStreak(habit.id);
 
             return (

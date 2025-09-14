@@ -20,7 +20,7 @@ export const calculateHabitStreak = (
 
   // Check if habit is active today
   const isHabitActiveToday = isHabitActiveOnDate(habit, checkDate);
-  
+
   // If habit is not active today, we don't count it in the streak calculation
   if (!isHabitActiveToday) {
     return 0;
@@ -38,10 +38,11 @@ export const calculateHabitStreak = (
 
   // Count consecutive days with completions or inactive days
   let daysChecked = 0;
-  while (daysChecked < 365) { // Max 365 days to prevent infinite loops
+  while (daysChecked < 365) {
+    // Max 365 days to prevent infinite loops
     // Check if habit is active on this day
     const isActiveOnDate = isHabitActiveOnDate(habit, checkDate);
-    
+
     if (isActiveOnDate) {
       const dateString = format(checkDate, "yyyy-MM-dd");
       const dayCompleted = habitCompletions.some(
@@ -61,7 +62,7 @@ export const calculateHabitStreak = (
       // For inactive days, we don't count them in the streak
       // This maintains the current behavior where inactive days don't affect streaks
     }
-    
+
     // Move to the previous day
     checkDate = subDays(checkDate, 1);
     daysChecked++;

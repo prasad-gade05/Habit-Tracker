@@ -1,10 +1,7 @@
 import React, { useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
 import { isHabitActiveOnDate } from "../utils/dateUtils";
-import {
-  format,
-  subDays,
-} from "date-fns";
+import { format, subDays } from "date-fns";
 
 const WeeklyPatterns: React.FC = () => {
   const { habits, completions, isHabitCompletedOnDate } = useHabitStore();
@@ -16,39 +13,44 @@ const WeeklyPatterns: React.FC = () => {
       // Collect data for this day of the week over the last 30 days
       const percentages: number[] = [];
       const today = new Date();
-      
+
       // Go back 30 days
       for (let i = 0; i < 30; i++) {
         const date = subDays(today, i);
         // Check if this date matches the day of the week we're analyzing
         if (date.getDay() === index) {
           const dateString = format(date, "yyyy-MM-dd");
-          
+
           // Get active habits for this specific date
-          const activeHabits = habits.filter(habit => 
+          const activeHabits = habits.filter((habit) =>
             isHabitActiveOnDate(habit, date)
           );
-          
+
           // If there are no active habits for this date, skip it
           if (activeHabits.length === 0) {
             continue;
           }
-          
+
           // Count completed active habits for this date
-          const completedHabits = activeHabits.filter(habit => 
+          const completedHabits = activeHabits.filter((habit) =>
             isHabitCompletedOnDate(habit.id, dateString)
           ).length;
-          
+
           // Calculate percentage for this date
-          const percentage = Math.round((completedHabits / activeHabits.length) * 100);
+          const percentage = Math.round(
+            (completedHabits / activeHabits.length) * 100
+          );
           percentages.push(percentage);
         }
       }
-      
+
       // Calculate average percentage for this day
-      const averagePercentage = percentages.length > 0 
-        ? Math.round(percentages.reduce((sum, p) => sum + p, 0) / percentages.length)
-        : 0;
+      const averagePercentage =
+        percentages.length > 0
+          ? Math.round(
+              percentages.reduce((sum, p) => sum + p, 0) / percentages.length
+            )
+          : 0;
 
       return {
         dayName,

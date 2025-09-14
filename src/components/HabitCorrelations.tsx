@@ -89,16 +89,22 @@ const HabitCorrelations: React.FC = () => {
             let completionArr2 = habitCompletionMatrix[habit2.id];
 
             // Filter out inactive days (-1 values) and only consider days when both habits are active
-            const filteredData = dates.map((_, index) => ({
-              habit1Active: completionArr1[index] !== -1,
-              habit2Active: completionArr2[index] !== -1,
-              habit1Completed: completionArr1[index] === 1,
-              habit2Completed: completionArr2[index] === 1,
-            })).filter(data => data.habit1Active && data.habit2Active);
+            const filteredData = dates
+              .map((_, index) => ({
+                habit1Active: completionArr1[index] !== -1,
+                habit2Active: completionArr2[index] !== -1,
+                habit1Completed: completionArr1[index] === 1,
+                habit2Completed: completionArr2[index] === 1,
+              }))
+              .filter((data) => data.habit1Active && data.habit2Active);
 
             // Create new arrays with only the data for active days
-            const filteredArr1 = filteredData.map(data => data.habit1Completed ? 1 : 0);
-            const filteredArr2 = filteredData.map(data => data.habit2Completed ? 1 : 0);
+            const filteredArr1 = filteredData.map((data) =>
+              data.habit1Completed ? 1 : 0
+            );
+            const filteredArr2 = filteredData.map((data) =>
+              data.habit2Completed ? 1 : 0
+            );
 
             if (filteredArr1.length > 0 && filteredArr2.length > 0) {
               const correlation = calculateCorrelation(
@@ -352,9 +358,9 @@ const HabitCorrelations: React.FC = () => {
                       }`}
                     >
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto ${
-                          getCorrelationColor(value)
-                        }`}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto ${getCorrelationColor(
+                          value
+                        )}`}
                       >
                         {rowIndex !== colIndex ? value.toFixed(1) : "-"}
                       </div>

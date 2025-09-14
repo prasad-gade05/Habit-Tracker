@@ -1,9 +1,7 @@
 import React, { useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
 import { Habit, isHabitActiveOnDate } from "../utils/dateUtils";
-import {
-  calculateHabitStreak,
-} from "../utils/streakUtils";
+import { calculateHabitStreak } from "../utils/streakUtils";
 import { Flame, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -18,10 +16,10 @@ const HabitStreakVisualization: React.FC = () => {
     return habits.map((habit) => {
       // For inactive habits, we don't calculate streaks
       const isHabitActiveToday = isHabitActiveOnDate(habit, todayDate);
-      
+
       let currentStreak = 0;
       let isCompletedToday = false;
-      
+
       if (isHabitActiveToday) {
         currentStreak = calculateHabitStreak(habit, completions, today);
         isCompletedToday = isHabitCompletedOnDate(habit.id, today);
@@ -43,7 +41,7 @@ const HabitStreakVisualization: React.FC = () => {
   // Get habits with the longest streaks (top 5) - only active habits
   const topStreakHabits = useMemo(() => {
     return [...habitsWithStreaks]
-      .filter(habit => habit.isHabitActiveToday) // Only consider active habits
+      .filter((habit) => habit.isHabitActiveToday) // Only consider active habits
       .sort((a, b) => b.currentStreak - a.currentStreak)
       .slice(0, 5);
   }, [habitsWithStreaks]);

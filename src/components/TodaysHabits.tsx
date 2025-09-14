@@ -46,14 +46,24 @@ const TodaysHabits: React.FC = () => {
   const today = getToday();
 
   const handleAddHabit = useCallback(
-    (name: string, description?: string, color?: string, daysOfWeek?: number[]) => {
+    (
+      name: string,
+      description?: string,
+      color?: string,
+      daysOfWeek?: number[]
+    ) => {
       addHabit(name, description, color, daysOfWeek);
     },
     [addHabit]
   );
 
   const handleUpdateHabit = useCallback(
-    (name: string, description?: string, color?: string, daysOfWeek?: number[]) => {
+    (
+      name: string,
+      description?: string,
+      color?: string,
+      daysOfWeek?: number[]
+    ) => {
       if (editingHabit) {
         updateHabit(editingHabit.id, name, description, color, daysOfWeek);
         setEditingHabit(null);
@@ -83,27 +93,26 @@ const TodaysHabits: React.FC = () => {
 
   const habitsWithStreaks = useMemo(
     () =>
-      habits
-        .map((habit) => {
-          const isHabitActiveToday = isHabitActiveOnDate(habit, parseISO(today));
-          let isCompletedTodayValue = false;
-          let currentStreakValue = 0;
-          
-          if (isHabitActiveToday) {
-            currentStreakValue = calculateHabitStreak(habit, completions, today);
-            isCompletedTodayValue = isHabitCompletedOnDate(habit.id, today);
-          } else {
-            // For inactive habits, they are not considered completed
-            isCompletedTodayValue = false;
-          }
-          
-          return {
-            ...habit,
-            currentStreak: currentStreakValue,
-            isCompletedToday: isCompletedTodayValue,
-            isHabitActiveToday,
-          };
-        }),
+      habits.map((habit) => {
+        const isHabitActiveToday = isHabitActiveOnDate(habit, parseISO(today));
+        let isCompletedTodayValue = false;
+        let currentStreakValue = 0;
+
+        if (isHabitActiveToday) {
+          currentStreakValue = calculateHabitStreak(habit, completions, today);
+          isCompletedTodayValue = isHabitCompletedOnDate(habit.id, today);
+        } else {
+          // For inactive habits, they are not considered completed
+          isCompletedTodayValue = false;
+        }
+
+        return {
+          ...habit,
+          currentStreak: currentStreakValue,
+          isCompletedToday: isCompletedTodayValue,
+          isHabitActiveToday,
+        };
+      }),
     [habits, completions, today, isHabitCompletedOnDate]
   );
 
@@ -129,8 +138,14 @@ const TodaysHabits: React.FC = () => {
               <div
                 key={habit.id}
                 className={`flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-secondary/30 ${
-                  habit.isCompletedToday && habit.isHabitActiveToday ? "opacity-60" : ""
-                } ${!habit.isHabitActiveToday ? "bg-gray-100 dark:bg-gray-800" : ""}`}
+                  habit.isCompletedToday && habit.isHabitActiveToday
+                    ? "opacity-60"
+                    : ""
+                } ${
+                  !habit.isHabitActiveToday
+                    ? "bg-gray-100 dark:bg-gray-800"
+                    : ""
+                }`}
                 style={{
                   borderLeft: habit.color
                     ? `4px solid ${habit.color}`
@@ -159,8 +174,14 @@ const TodaysHabits: React.FC = () => {
                 <div className="flex-1 min-w-0 mr-2">
                   <div
                     className={`text-sm font-medium text-foreground ${
-                      habit.isCompletedToday && habit.isHabitActiveToday ? "line-through" : ""
-                    } ${!habit.isHabitActiveToday ? "text-gray-500 dark:text-gray-400" : ""}`}
+                      habit.isCompletedToday && habit.isHabitActiveToday
+                        ? "line-through"
+                        : ""
+                    } ${
+                      !habit.isHabitActiveToday
+                        ? "text-gray-500 dark:text-gray-400"
+                        : ""
+                    }`}
                   >
                     {habit.name}
                   </div>
@@ -171,9 +192,15 @@ const TodaysHabits: React.FC = () => {
                   )}
                   {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
                     <div className="text-xs text-muted-foreground mt-1">
-                      Active: {habit.daysOfWeek.map(day => 
-                        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]
-                      ).join(', ')}
+                      Active:{" "}
+                      {habit.daysOfWeek
+                        .map(
+                          (day) =>
+                            ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+                              day
+                            ]
+                        )
+                        .join(", ")}
                     </div>
                   )}
                   {!habit.isHabitActiveToday && (
