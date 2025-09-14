@@ -23,7 +23,7 @@ class HabitTrackerDB extends Dexie {
     });
 
     this.version(1).stores({
-      habits: "id, name, description, createdAt",
+      habits: "id, name, description, color, createdAt",
       completions: "id, habitId, date, [habitId+date]", // Composite index for faster queries
     });
 
@@ -35,12 +35,17 @@ class HabitTrackerDB extends Dexie {
   }
 
   // Habit methods
-  async addHabit(name: string, description?: string): Promise<string> {
+  async addHabit(
+    name: string,
+    description?: string,
+    color?: string
+  ): Promise<string> {
     try {
       const id = await this.habits.add({
         id: crypto.randomUUID(),
         name,
         description,
+        color,
         createdAt: new Date().toISOString(),
       });
       return id as string;
@@ -57,9 +62,10 @@ class HabitTrackerDB extends Dexie {
   async updateHabit(
     id: string,
     name: string,
-    description?: string
+    description?: string,
+    color?: string
   ): Promise<void> {
-    await this.habits.update(id, { name, description });
+    await this.habits.update(id, { name, description, color });
   }
 
   async deleteHabit(id: string): Promise<void> {

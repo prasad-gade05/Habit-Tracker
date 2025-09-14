@@ -21,9 +21,13 @@ const HabitManager: React.FC = () => {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const handleUpdateHabit = (name: string, description?: string) => {
+  const handleUpdateHabit = (
+    name: string,
+    description?: string,
+    color?: string
+  ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description);
+      updateHabit(editingHabit.id, name, description, color);
     }
   };
 
@@ -48,9 +52,20 @@ const HabitManager: React.FC = () => {
             <div
               key={habit.id}
               className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-secondary/30 transition-colors"
+              style={{
+                borderLeft: habit.color
+                  ? `4px solid ${habit.color}`
+                  : "4px solid #3B82F6",
+              }}
             >
               <div>
-                <div className="font-medium text-foreground">{habit.name}</div>
+                <div className="flex items-center space-x-2 font-medium text-foreground">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: habit.color || "#3B82F6" }}
+                  />
+                  <span>{habit.name}</span>
+                </div>
                 {habit.description && (
                   <div className="text-sm text-muted-foreground mt-1">
                     {habit.description}

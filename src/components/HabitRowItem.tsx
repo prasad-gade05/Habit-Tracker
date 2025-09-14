@@ -32,8 +32,12 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
     toggleCompletion(habit.id, today);
   };
 
-  const handleUpdateHabit = (name: string, description?: string) => {
-    updateHabit(habit.id, name, description);
+  const handleUpdateHabit = (
+    name: string,
+    description?: string,
+    color?: string
+  ) => {
+    updateHabit(habit.id, name, description, color);
   };
 
   const handleDeleteHabit = () => {
@@ -46,13 +50,23 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
         className={`flex items-center p-3 rounded-lg transition-all duration-200 ${
           isCompleted ? "bg-secondary/50" : "hover:bg-secondary/30"
         }`}
+        style={{
+          borderLeft: habit.color
+            ? `4px solid ${habit.color}`
+            : "4px solid #3B82F6",
+        }}
       >
         <div
           className={`flex items-center justify-center w-5 h-5 rounded-md border mr-3 transition-all duration-200 cursor-pointer ${
             isCompleted
-              ? "bg-green-500 border-green-500"
+              ? "border-current"
               : "border-muted-foreground hover:border-primary"
           }`}
+          style={{
+            backgroundColor: isCompleted
+              ? habit.color || "#3B82F6"
+              : "transparent",
+          }}
           onClick={handleToggle}
         >
           {isCompleted && <Check className="w-3 h-3 text-white" />}

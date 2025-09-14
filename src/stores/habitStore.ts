@@ -11,11 +11,16 @@ interface HabitStore {
 
   // Actions
   fetchAllData: () => Promise<void>;
-  addHabit: (name: string, description?: string) => Promise<void>;
+  addHabit: (
+    name: string,
+    description?: string,
+    color?: string
+  ) => Promise<void>;
   updateHabit: (
     id: string,
     name: string,
-    description?: string
+    description?: string,
+    color?: string
   ) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
   toggleCompletion: (habitId: string, date?: string) => Promise<void>;
@@ -47,13 +52,14 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  addHabit: async (name, description) => {
+  addHabit: async (name, description, color) => {
     try {
-      const id = await db.addHabit(name, description);
+      const id = await db.addHabit(name, description, color);
       const newHabit = {
         id,
         name,
         description,
+        color,
         createdAt: new Date().toISOString(),
       };
       set((state) => ({ habits: [...state.habits, newHabit], error: null }));
@@ -73,12 +79,12 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  updateHabit: async (id, name, description) => {
+  updateHabit: async (id, name, description, color) => {
     try {
-      await db.updateHabit(id, name, description);
+      await db.updateHabit(id, name, description, color);
       set((state) => ({
         habits: state.habits.map((habit) =>
-          habit.id === id ? { ...habit, name, description } : habit
+          habit.id === id ? { ...habit, name, description, color } : habit
         ),
         error: null,
       }));

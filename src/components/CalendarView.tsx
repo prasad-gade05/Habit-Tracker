@@ -68,9 +68,13 @@ const CalendarView: React.FC = () => {
   };
 
   // Handle habit update
-  const handleUpdateHabit = (name: string, description?: string) => {
+  const handleUpdateHabit = (
+    name: string,
+    description?: string,
+    color?: string
+  ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description);
+      updateHabit(editingHabit.id, name, description, color);
       setIsEditModalOpen(false);
       setEditingHabit(null);
     }
@@ -182,6 +186,11 @@ const CalendarView: React.FC = () => {
                 <div
                   key={habit.id}
                   className="flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors"
+                  style={{
+                    borderLeft: habit.color
+                      ? `3px solid ${habit.color}`
+                      : "3px solid #3B82F6",
+                  }}
                 >
                   <Checkbox
                     id={habit.id}
@@ -193,7 +202,13 @@ const CalendarView: React.FC = () => {
                       htmlFor={habit.id}
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      <div>{habit.name}</div>
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: habit.color || "#3B82F6" }}
+                        />
+                        <span>{habit.name}</span>
+                      </div>
                       {habit.description && (
                         <div className="text-xs text-muted-foreground mt-1">
                           {habit.description}

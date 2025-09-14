@@ -18,8 +18,12 @@ const QuickActionsModule: React.FC = () => {
       ? Math.round((todayCompletions.length / habits.length) * 100)
       : 0;
 
-  const handleAddHabit = (name: string, description?: string) => {
-    addHabit(name, description);
+  const handleAddHabit = (
+    name: string,
+    description?: string,
+    color?: string
+  ) => {
+    addHabit(name, description, color);
   };
 
   return (

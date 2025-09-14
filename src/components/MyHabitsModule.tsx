@@ -20,13 +20,21 @@ const MyHabitsModule: React.FC = () => {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const today = getToday();
 
-  const handleAddHabit = (name: string, description?: string) => {
-    addHabit(name, description);
+  const handleAddHabit = (
+    name: string,
+    description?: string,
+    color?: string
+  ) => {
+    addHabit(name, description, color);
   };
 
-  const handleUpdateHabit = (name: string, description?: string) => {
+  const handleUpdateHabit = (
+    name: string,
+    description?: string,
+    color?: string
+  ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description);
+      updateHabit(editingHabit.id, name, description, color);
       setEditingHabit(null);
     }
   };
@@ -76,12 +84,29 @@ const MyHabitsModule: React.FC = () => {
               <div
                 key={habit.id}
                 className="bg-secondary/30 rounded-lg p-4 group transition-all duration-200 hover:bg-secondary/40"
+                style={{
+                  borderLeft: habit.color
+                    ? `4px solid ${habit.color}`
+                    : "4px solid #3B82F6",
+                }}
               >
                 <div className="flex justify-between items-start">
                   <div className="flex items-start space-x-3">
                     {/* Habit icon (using a placeholder) */}
-                    <div className="bg-accent/20 w-9 h-9 rounded-lg flex items-center justify-center">
-                      <div className="bg-accent w-5 h-5 rounded"></div>
+                    <div
+                      className="w-9 h-9 rounded-lg flex items-center justify-center"
+                      style={{
+                        backgroundColor: habit.color
+                          ? `${habit.color}20`
+                          : "#3B82F620",
+                      }}
+                    >
+                      <div
+                        className="w-5 h-5 rounded"
+                        style={{
+                          backgroundColor: habit.color || "#3B82F6",
+                        }}
+                      ></div>
                     </div>
 
                     <div>
@@ -100,9 +125,16 @@ const MyHabitsModule: React.FC = () => {
                       variant={isCompleted ? "default" : "outline"}
                       className={`h-7 px-2 text-xs ${
                         isCompleted
-                          ? "bg-success text-primary"
-                          : "border-success text-success hover:bg-success/10"
+                          ? "text-white"
+                          : "border-current hover:bg-current/10"
                       }`}
+                      style={{
+                        backgroundColor: isCompleted
+                          ? habit.color || "#3B82F6"
+                          : "transparent",
+                        borderColor: habit.color || "#3B82F6",
+                        color: isCompleted ? "white" : habit.color || "#3B82F6",
+                      }}
                       onClick={() => handleToggleCompletion(habit.id)}
                     >
                       {isCompleted ? (
