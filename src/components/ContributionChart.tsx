@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef, useEffect } from 'react'
 import { useHabitStore } from '../stores/habitStore'
 import { getLast365Days, getCompletionPercentageForDate } from '../utils/dateUtils'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -6,6 +6,8 @@ import { format, parseISO, isSameDay } from 'date-fns'
 
 const ContributionChart: React.FC = () => {
   const { habits, completions } = useHabitStore()
+  const chartContainerRef = useRef<HTMLDivElement>(null)
+  const todayRef = useRef<HTMLDivElement>(null)
   
   // Generate the last 365 days
   const last365Days = useMemo(() => getLast365Days(), [])
@@ -93,12 +95,22 @@ const ContributionChart: React.FC = () => {
     return labels
   }, [weeks])
   
+  // Scroll to today's position when component mounts
+  useEffect(() => {
+    if (chartContainerRef.current && todayRef.current) {
+      // Calculate the position of today's element
+      const todayPosition = todayIndex * 16 // Each week is 16px wide (4px * 4 weeks)
+      // Scroll to position today in the center of the view
+      chartContainerRef.current.scrollLeft = todayPosition - (chartContainerRef.current.clientWidth / 2)
+    }
+  }, [todayIndex])
+  
   return (
-    <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
-      <h2 className="text-xl font-semibold text-foreground mb-6">Habit Consistency</h2>
+    <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
+      <h2 className="text-lg font-semibold text-foreground mb-5">Habit Consistency</h2>
       
       <div className="flex items-center mb-4">
-        <div className="text-sm text-muted-foreground mr-4">Less</div>
+        <div className="text-xs text-muted-foreground mr-3">Less</div>
         <div className="flex space-x-1">
           <div className="w-3 h-3 bg-secondary rounded-sm"></div>
           <div className="w-3 h-3 bg-green-500/20 rounded-sm"></div>
@@ -106,13 +118,13 @@ const ContributionChart: React.FC = () => {
           <div className="w-3 h-3 bg-green-500/80 rounded-sm"></div>
           <div className="w-3 h-3 bg-green-500 rounded-sm"></div>
         </div>
-        <div className="text-sm text-muted-foreground ml-4">More</div>
+        <div className="text-xs text-muted-foreground ml-3">More</div>
       </div>
       
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" ref={chartContainerRef}>
         <div className="min-w-max">
           {/* Month labels */}
-          <div className="flex ml-8 mb-1">
+          <div className="flex ml-7 mb-1">
             {monthLabels.map((month, index) => (
               <div 
                 key={index} 
@@ -145,15 +157,16 @@ const ContributionChart: React.FC = () => {
                         <Tooltip key={`${weekIndex}-${dayIndex}`}>
                           <TooltipTrigger asChild>
                             <div
+                              ref={day.isToday ? todayRef : null}
                               className={`w-3 h-3 rounded-sm transition-all duration-200 ${
                                 getColorClass(day.percentage)
-                              } ${day.isToday ? 'border-2 border-white' : ''}`}
+                              } ${day.isToday ? 'border-2 border-white ring-2 ring-yellow-400' : ''}`}
                             />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <div className="text-sm">
+                            <div className="text-xs">
                               <div>{format(parseISO(day.date), 'EEEE, MMMM d, yyyy')}</div>
-                              <div>
+                              <div className="mt-1">
                                 {completionsByDate[day.date] || 0} / {habits.length} habits completed
                               </div>
                               <div className="mt-1">{day.percentage}% completion</div>

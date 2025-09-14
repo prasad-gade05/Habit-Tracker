@@ -94,7 +94,7 @@ const CalendarView: React.FC = () => {
         mode="single"
         selected={date}
         onSelect={handleDateSelect}
-        className="rounded-md border"
+        className="rounded-lg border border-border"
         modifiers={{
           completed: (date) => {
             const formattedDate = format(date, "yyyy-MM-dd");
@@ -103,7 +103,7 @@ const CalendarView: React.FC = () => {
               completions,
               formattedDate
             );
-            return percentage > 0;
+            return percentage > 0 && percentage < 100;
           },
           perfect: (date) => {
             const formattedDate = format(date, "yyyy-MM-dd");
@@ -116,25 +116,50 @@ const CalendarView: React.FC = () => {
           },
         }}
         modifiersClassNames={{
-          completed: "bg-green-500/20 hover:bg-green-500/30",
-          perfect: "bg-green-500 hover:bg-green-600",
+          completed: "border border-dashed border-secondary",
+          perfect: "border-2 border-accent",
+        }}
+        classNames={{
+          day: "rounded-md bg-surface",
+          day_selected: "bg-success text-primary",
         }}
       />
     );
   }, [date, habits, completions]);
 
   return (
-    <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-foreground mb-2">
+    <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
+      <div className="mb-5">
+        <h2 className="text-lg font-semibold text-foreground mb-1">
           Habit Calendar
         </h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-xs">
           Click on any date to view and edit your habits for that day
         </p>
       </div>
 
       {StyledCalendar}
+
+      {/* Calendar Legend */}
+      <div className="mt-5 flex flex-wrap items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-md bg-surface border border-border mr-2"></div>
+            <span className="text-xs text-muted-foreground">Default</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-md bg-success border-2 border-accent mr-2"></div>
+            <span className="text-xs text-muted-foreground">100% Complete</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-md bg-surface border border-dashed border-secondary mr-2"></div>
+            <span className="text-xs text-muted-foreground">Partial</span>
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground mt-2 md:mt-0">
+          Click dates to view details
+        </div>
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-md">
@@ -144,14 +169,14 @@ const CalendarView: React.FC = () => {
                 format(parseISO(selectedDate), "EEEE, MMMM d, yyyy")}
             </DialogTitle>
             {selectedDate && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 {completionPercentage}% completion (
                 {completionsForSelectedDate.length} of {habits.length} habits)
               </div>
             )}
           </DialogHeader>
 
-          <div className="space-y-4 mt-4 max-h-96 overflow-y-auto">
+          <div className="space-y-3 mt-3 max-h-96 overflow-y-auto">
             {habits.length > 0 ? (
               habits.map((habit) => (
                 <div
@@ -180,19 +205,19 @@ const CalendarView: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
+                      className="h-7 w-7 p-0"
                       onClick={() => startEditing(habit)}
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3 w-3" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 p-0"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -219,13 +244,13 @@ const CalendarView: React.FC = () => {
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground text-center py-4">
+              <p className="text-muted-foreground text-center py-4 text-sm">
                 No habits to display. Add some habits to get started!
               </p>
             )}
           </div>
 
-          <div className="mt-4 text-xs text-muted-foreground text-center">
+          <div className="mt-3 text-xs text-muted-foreground text-center">
             Toggle habits to mark them as completed or not completed on this
             date
           </div>

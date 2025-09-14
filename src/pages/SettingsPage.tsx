@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "../components/theme-provider";
 import HabitManager from "../components/HabitManager";
+import NavigationModule from "../components/NavigationModule";
+import QuickActionsModule from "../components/QuickActionsModule";
 
 const SettingsPage: React.FC = () => {
   const { habits, completions } = useHabitStore();
@@ -94,37 +96,53 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto px-4 py-6">
+      {/* Improved Application Header */}
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Minimal Habit Tracker</h1>
+        <p className="text-sm text-muted-foreground mt-1">Build consistency, one day at a time</p>
+      </div>
+      
+      {/* Minimal Navigation at the top */}
+      <div className="mb-6">
+        <NavigationModule />
+      </div>
+      
+      <div className="mb-5">
+        <h1 className="text-xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground text-sm">
           Manage your data and preferences
         </p>
       </div>
+      
+      {/* Quick Actions Module */}
+      <div className="mb-5">
+        <QuickActionsModule />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Appearance
           </h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground">Theme</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-medium text-foreground text-sm">Theme</h3>
+                <p className="text-xs text-muted-foreground">
                   Switch between light and dark mode
                 </p>
               </div>
-              <Button onClick={toggleTheme} variant="outline" size="sm">
+              <Button onClick={toggleTheme} variant="outline" size="sm" className="h-8 px-3 text-xs">
                 {theme === "dark" ? (
                   <>
-                    <Sun className="w-4 h-4 mr-2" />
+                    <Sun className="w-3 h-3 mr-1" />
                     Light
                   </>
                 ) : (
                   <>
-                    <Moon className="w-4 h-4 mr-2" />
+                    <Moon className="w-3 h-3 mr-1" />
                     Dark
                   </>
                 )}
@@ -133,29 +151,29 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
+        <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Data Management
           </h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground">Export Data</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-medium text-foreground text-sm">Export Data</h3>
+                <p className="text-xs text-muted-foreground">
                   Download a backup of your habits and completion history
                 </p>
               </div>
-              <Button onClick={handleExport} variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
+              <Button onClick={handleExport} variant="outline" size="sm" className="h-8 px-3 text-xs">
+                <Download className="w-3 h-3 mr-1" />
                 Export
               </Button>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground">Import Data</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-medium text-foreground text-sm">Import Data</h3>
+                <p className="text-xs text-muted-foreground">
                   Restore your habits from a backup file
                 </p>
               </div>
@@ -167,9 +185,9 @@ const SettingsPage: React.FC = () => {
                 id="import-file"
               />
               <label htmlFor="import-file">
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
                   <span className="cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
+                    <Upload className="w-3 h-3 mr-1" />
                     Import
                   </span>
                 </Button>
@@ -178,23 +196,23 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-card rounded-lg p-6 shadow-sm border border-border lg:col-span-2">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
+        <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md lg:col-span-2">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Danger Zone
           </h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground">Reset Database</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-medium text-foreground text-sm">Reset Database</h3>
+                <p className="text-xs text-muted-foreground">
                   Completely reset the database to fix potential issues
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <RotateCcw className="w-4 h-4 mr-2" />
+                  <Button variant="destructive" size="sm" className="h-8 px-3 text-xs">
+                    <RotateCcw className="w-3 h-3 mr-1" />
                     Reset Database
                   </Button>
                 </AlertDialogTrigger>
@@ -222,15 +240,15 @@ const SettingsPage: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground">Clear All Data</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-medium text-foreground text-sm">Clear All Data</h3>
+                <p className="text-xs text-muted-foreground">
                   Permanently delete all habits and completion history
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="w-4 h-4 mr-2" />
+                  <Button variant="destructive" size="sm" className="h-8 px-3 text-xs">
+                    <Trash2 className="w-3 h-3 mr-1" />
                     Clear All
                   </Button>
                 </AlertDialogTrigger>
@@ -244,14 +262,15 @@ const SettingsPage: React.FC = () => {
                       all your habits and completion history from your device.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-                  <div className="py-4">
-                    <p className="text-sm text-muted-foreground mb-2">
+                  <div className="py-3">
+                    <p className="text-xs text-muted-foreground mb-2">
                       To confirm, type "DELETE" in the box below:
                     </p>
                     <Input
                       value={deleteConfirmation}
                       onChange={(e) => setDeleteConfirmation(e.target.value)}
                       placeholder="Type DELETE"
+                      className="text-xs"
                     />
                   </div>
                   <AlertDialogFooter>
@@ -271,35 +290,35 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-5">
         <HabitManager />
       </div>
 
-      <div className="mt-8 bg-card rounded-lg p-6 shadow-sm border border-border">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
+      <div className="mt-5 bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Statistics
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-secondary/30 rounded-lg">
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-xl font-bold text-foreground">
               {habits.length}
             </div>
-            <div className="text-muted-foreground">Total Habits</div>
+            <div className="text-xs text-muted-foreground">Total Habits</div>
           </div>
           <div className="p-4 bg-secondary/30 rounded-lg">
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-xl font-bold text-foreground">
               {completions.length}
             </div>
-            <div className="text-muted-foreground">Total Completions</div>
+            <div className="text-xs text-muted-foreground">Total Completions</div>
           </div>
           <div className="p-4 bg-secondary/30 rounded-lg">
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-xl font-bold text-foreground">
               {habits.length > 0
                 ? Math.round((completions.length / habits.length) * 100)
                 : 0}
               %
             </div>
-            <div className="text-muted-foreground">Overall Completion Rate</div>
+            <div className="text-xs text-muted-foreground">Overall Completion Rate</div>
           </div>
         </div>
       </div>

@@ -4,6 +4,11 @@ import PerformanceBreakdown from "../components/PerformanceBreakdown";
 import StreakAnalytics from "../components/StreakAnalytics";
 import PatternRecognition from "../components/PatternRecognition";
 import HabitManager from "../components/HabitManager";
+import GlobalSummaryHeader from "../components/GlobalSummaryHeader";
+import NavigationModule from "../components/NavigationModule";
+import QuickActionsModule from "../components/QuickActionsModule";
+import ConsistencyCard from "../components/ConsistencyCard";
+import MyHabitsModule from "../components/MyHabitsModule";
 
 const AnalyticsPage: React.FC = () => {
   const { fetchAllData } = useHabitStore();
@@ -13,25 +18,45 @@ const AnalyticsPage: React.FC = () => {
   }, [fetchAllData]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">
+    <div className="container mx-auto px-4 py-6">
+      {/* Improved Application Header */}
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Minimal Habit Tracker</h1>
+        <p className="text-sm text-muted-foreground mt-1">Build consistency, one day at a time</p>
+      </div>
+      
+      {/* Minimal Navigation at the top */}
+      <div className="mb-6">
+        <NavigationModule />
+      </div>
+
+      <div className="mb-5">
+        <h1 className="text-xl font-bold text-foreground">
           Analytics & Insights
         </h1>
-        <p className="text-muted-foreground">Deep dive into your habit data</p>
+        <p className="text-muted-foreground text-sm">Deep dive into your habit data</p>
       </div>
+      
+      <GlobalSummaryHeader />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <PerformanceBreakdown />
-        <StreakAnalytics />
-      </div>
-
-      <div className="mt-8">
-        <PatternRecognition />
-      </div>
-
-      <div className="mt-8">
-        <HabitManager />
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+        {/* Left column (sidebar) */}
+        <div className="md:col-span-1 space-y-5">
+          <QuickActionsModule />
+          <ConsistencyCard />
+        </div>
+        
+        {/* Right column (main content) */}
+        <div className="md:col-span-2 space-y-5">
+          <MyHabitsModule />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <PerformanceBreakdown />
+            <StreakAnalytics />
+          </div>
+          <PatternRecognition />
+          <HabitManager />
+        </div>
       </div>
     </div>
   );

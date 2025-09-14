@@ -3,6 +3,9 @@ import { useHabitStore } from '../stores/habitStore'
 import GlobalSummaryHeader from '../components/GlobalSummaryHeader'
 import QuickActionsModule from '../components/QuickActionsModule'
 import ContributionChart from '../components/ContributionChart'
+import NavigationModule from '../components/NavigationModule'
+import ConsistencyCard from '../components/ConsistencyCard'
+import MyHabitsModule from '../components/MyHabitsModule'
 
 const DashboardPage: React.FC = () => {
   const { fetchAllData, loading } = useHabitStore()
@@ -20,20 +23,33 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Habit Tracker</h1>
-        <p className="text-muted-foreground">Build better habits, one day at a time.</p>
+    <div className="container mx-auto px-4 py-6">
+      {/* Improved Application Header */}
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">Minimal Habit Tracker</h1>
+        <p className="text-sm text-muted-foreground mt-1">Build consistency, one day at a time</p>
+      </div>
+      
+      {/* Minimal Navigation at the top */}
+      <div className="mb-6">
+        <NavigationModule />
       </div>
       
       <GlobalSummaryHeader />
       
-      <div className="mt-8">
-        <QuickActionsModule />
-      </div>
-      
-      <div className="mt-8">
-        <ContributionChart />
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+        {/* Left column (sidebar) */}
+        <div className="md:col-span-1 space-y-5">
+          <QuickActionsModule />
+          <ConsistencyCard />
+        </div>
+        
+        {/* Right column (main content) */}
+        <div className="md:col-span-2 space-y-5">
+          <MyHabitsModule />
+          <ContributionChart />
+        </div>
       </div>
     </div>
   )

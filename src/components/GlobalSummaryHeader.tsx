@@ -20,18 +20,22 @@ const GlobalSummaryHeader: React.FC = () => {
       <GlobalSummaryCard 
         label="Active Habits" 
         value={activeHabits} 
+        type="activeHabits"
       />
       <GlobalSummaryCard 
         label="Completed Today" 
         value={`${completedToday} / ${activeHabits}`} 
+        type="completedToday"
       />
       <GlobalSummaryCard 
         label="Completion Rate" 
         value={`${completionRate}%`} 
+        type="completionRate"
       />
       <GlobalSummaryCard 
         label="Perfect Days" 
         value={perfectDays} 
+        type="perfectDays"
       />
     </div>
   )

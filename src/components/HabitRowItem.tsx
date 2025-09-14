@@ -48,25 +48,25 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
         }`}
       >
         <div
-          className={`flex items-center justify-center w-6 h-6 rounded-md border mr-4 transition-all duration-200 cursor-pointer ${
+          className={`flex items-center justify-center w-5 h-5 rounded-md border mr-3 transition-all duration-200 cursor-pointer ${
             isCompleted
               ? "bg-green-500 border-green-500"
               : "border-muted-foreground hover:border-primary"
           }`}
           onClick={handleToggle}
         >
-          {isCompleted && <Check className="w-4 h-4 text-white" />}
+          {isCompleted && <Check className="w-3 h-3 text-white" />}
         </div>
         <div className="flex-1 cursor-pointer" onClick={handleToggle}>
           <div
-            className={`text-foreground ${
+            className={`text-foreground text-sm ${
               isCompleted ? "opacity-70 line-through" : ""
             }`}
           >
             {habit.name}
           </div>
           {habit.description && (
-            <div className="text-sm text-muted-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               {habit.description}
             </div>
           )}
@@ -75,15 +75,15 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
             onClick={() => setIsEditModalOpen(true)}
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3 w-3" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Trash2 className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                <Trash2 className="h-3 w-3" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
