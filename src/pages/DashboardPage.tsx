@@ -6,6 +6,7 @@ import ContributionChart from "../components/ContributionChart";
 import NavigationModule from "../components/NavigationModule";
 import ConsistencyCard from "../components/ConsistencyCard";
 import MyHabitsModule from "../components/MyHabitsModule";
+import WeeklyOverviewChart from "../components/WeeklyOverviewChart";
 
 const DashboardPage: React.FC = () => {
   const { fetchAllData, loading } = useHabitStore();
@@ -47,6 +48,7 @@ const DashboardPage: React.FC = () => {
         <div className="md:col-span-1 space-y-5">
           <QuickActionsModule />
           <ConsistencyCard />
+          <WeeklyOverviewChart />
         </div>
 
         {/* Right column (main content) */}
