@@ -4,7 +4,7 @@ import GlobalSummaryHeader from "../components/GlobalSummaryHeader";
 import QuickActionsModule from "../components/QuickActionsModule";
 import ContributionChart from "../components/ContributionChart";
 import NavigationModule from "../components/NavigationModule";
-import ConsistencyCard from "../components/ConsistencyCard";
+// ConsistencyCard removed as requested
 import MyHabitsModule from "../components/MyHabitsModule";
 import WeeklyOverviewChart from "../components/WeeklyOverviewChart";
 
@@ -47,7 +47,7 @@ const DashboardPage: React.FC = () => {
         {/* Left column (sidebar) */}
         <div className="md:col-span-1 space-y-5">
           <QuickActionsModule />
-          <ConsistencyCard />
+          {/* ConsistencyCard removed as requested */}
           <WeeklyOverviewChart />
         </div>
 
