@@ -6,7 +6,6 @@ import PatternRecognition from "../components/PatternRecognition";
 import GlobalSummaryHeader from "../components/GlobalSummaryHeader";
 import NavigationModule from "../components/NavigationModule";
 import QuickActionsModule from "../components/QuickActionsModule";
-import ConsistencyCard from "../components/ConsistencyCard";
 import MyHabitsModule from "../components/MyHabitsModule";
 import CompletionRatesVisual from "../components/CompletionRatesVisual";
 import HabitCorrelations from "../components/HabitCorrelations";
@@ -51,7 +50,6 @@ const AnalyticsPage: React.FC = () => {
         {/* Left column (sidebar) */}
         <div className="md:col-span-1 space-y-5">
           <QuickActionsModule />
-          <ConsistencyCard />
           <CompletionRatesVisual />
           <HabitCorrelations />
         </div>
