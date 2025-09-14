@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { Habit } from "../utils/dateUtils";
+import { Habit, isHabitActiveOnDate } from "../utils/dateUtils";
 import HabitRowItem from "./HabitRowItem";
 import HabitModal from "./HabitModal";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Check } from "lucide-react";
 import { getToday } from "../utils/dateUtils";
+import { parseISO } from "date-fns";
 
 const MyHabitsModule: React.FC = () => {
   const {
@@ -23,18 +24,20 @@ const MyHabitsModule: React.FC = () => {
   const handleAddHabit = (
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    daysOfWeek?: number[]
   ) => {
-    addHabit(name, description, color);
+    addHabit(name, description, color, daysOfWeek);
   };
 
   const handleUpdateHabit = (
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    daysOfWeek?: number[]
   ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description, color);
+      updateHabit(editingHabit.id, name, description, color, daysOfWeek);
       setEditingHabit(null);
     }
   };
@@ -78,6 +81,8 @@ const MyHabitsModule: React.FC = () => {
         <div className="space-y-3">
           {habits.map((habit: Habit) => {
             const isCompleted = isHabitCompletedOnDate(habit.id, today);
+            // Check if habit is active today
+            const isHabitActiveToday = isHabitActiveOnDate(habit, parseISO(today));
             const streak = calculateStreak(habit.id);
 
             return (
@@ -113,6 +118,25 @@ const MyHabitsModule: React.FC = () => {
                       <div className="font-medium text-foreground text-sm">
                         {habit.name}
                       </div>
+                      {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Active:{" "}
+                          {habit.daysOfWeek
+                            .map(
+                              (day) =>
+                                [
+                                  "Sun",
+                                  "Mon",
+                                  "Tue",
+                                  "Wed",
+                                  "Thu",
+                                  "Fri",
+                                  "Sat",
+                                ][day]
+                            )
+                            .join(", ")}
+                        </div>
+                      )}
                       <div className="text-xs bg-accent/30 text-accent-foreground px-2 py-1 rounded mt-1 inline-block">
                         {streak} day{streak !== 1 ? "s" : ""} streak
                       </div>
@@ -135,7 +159,13 @@ const MyHabitsModule: React.FC = () => {
                         borderColor: habit.color || "#3B82F6",
                         color: isCompleted ? "white" : habit.color || "#3B82F6",
                       }}
-                      onClick={() => handleToggleCompletion(habit.id)}
+                      onClick={() => {
+                        // Only allow toggling for active habits
+                        if (isHabitActiveToday) {
+                          handleToggleCompletion(habit.id);
+                        }
+                      }}
+                      disabled={!isHabitActiveToday}
                     >
                       {isCompleted ? (
                         <>

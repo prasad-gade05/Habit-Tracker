@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useHabitStore } from '../stores/habitStore'
-import { Completion } from '../utils/dateUtils'
+import { Completion, isHabitActiveOnDate } from '../utils/dateUtils'
+import { parseISO, isBefore, isAfter, addDays, subDays } from 'date-fns'
 import { Flame, Trophy } from 'lucide-react'
 
 const StreakAnalytics: React.FC = () => {
@@ -22,58 +23,108 @@ const StreakAnalytics: React.FC = () => {
         }
       }
       
-      // Calculate current streak (consecutive days ending with today or last completion)
+      // For day-specific habits, we need to consider only the days when the habit is active
+      // Convert completion dates to actual Date objects
+      const completionDates = habitCompletions.map(c => parseISO(c.date))
+      
+      // Calculate current streak (consecutive active days ending with today or last completion)
       let currentStreak = 0
       const today = new Date()
       const todayStr = today.toISOString().split('T')[0]
       
       // Find the most recent completion date
       const lastCompletion = habitCompletions[habitCompletions.length - 1]
-      const lastCompletionDate = new Date(lastCompletion.date)
+      const lastCompletionDate = parseISO(lastCompletion.date)
       
-      // If the last completion was today or yesterday, calculate current streak
-      const daysSinceLastCompletion = Math.floor(
-        (today.getTime() - lastCompletionDate.getTime()) / (1000 * 60 * 60 * 24)
-      )
-      
-      if (daysSinceLastCompletion <= 1) {
-        // Count backwards from the last completion to find the streak
-        currentStreak = 1
-        for (let i = habitCompletions.length - 2; i >= 0; i--) {
-          const currentDate = new Date(habitCompletions[i].date)
-          const nextDate = new Date(habitCompletions[i + 1].date)
-          const dayDifference = Math.floor(
-            (nextDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)
-          )
-          
-          if (dayDifference === 1) {
-            currentStreak++
-          } else {
-            break
-          }
-        }
-      }
-      
-      // Calculate longest streak
-      let longestStreak = 0
-      let tempStreak = 1
-      
-      for (let i = 1; i < habitCompletions.length; i++) {
-        const currentDate = new Date(habitCompletions[i].date)
-        const prevDate = new Date(habitCompletions[i - 1].date)
-        const dayDifference = Math.floor(
-          (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
-        )
+      // Check if the habit is active today or was completed today/yesterday
+      if (isHabitActiveOnDate(habit, today) || 
+          isHabitActiveOnDate(habit, lastCompletionDate) ||
+          isHabitActiveOnDate(habit, subDays(today, 1))) {
         
-        if (dayDifference === 1) {
-          tempStreak++
-        } else {
-          longestStreak = Math.max(longestStreak, tempStreak)
-          tempStreak = 1
+        // Start from today and work backwards, counting only active days
+        let currentDate = today
+        let streakDays = 0
+        
+        // Continue counting while we find completed active days
+        while (true) {
+          // Check if habit is active on this date
+          if (isHabitActiveOnDate(habit, currentDate)) {
+            // Check if there's a completion for this date
+            const dateStr = currentDate.toISOString().split('T')[0]
+            const hasCompletion = habitCompletions.some(c => c.date === dateStr)
+            
+            if (hasCompletion) {
+              streakDays++
+            } else {
+              // If habit is active but not completed, break the streak
+              // unless we're at the start (today) and haven't completed yet
+              const isToday = currentDate.toDateString() === today.toDateString()
+              if (!isToday) {
+                break
+              }
+            }
+          }
+          
+          // Move to the previous day
+          currentDate = subDays(currentDate, 1)
+          
+          // Safety check to prevent infinite loop
+          if (streakDays > 365) break
         }
+        
+        currentStreak = streakDays
       }
       
-      longestStreak = Math.max(longestStreak, tempStreak)
+      // Calculate longest streak by examining all completion sequences
+      let longestStreak = 0
+      
+      // Group completions by consecutive active days
+      if (habitCompletions.length > 0) {
+        let maxStreak = 0
+        let currentStreak = 0
+        let previousDate = parseISO(habitCompletions[0].date)
+        
+        // Start with the first completion
+        if (isHabitActiveOnDate(habit, previousDate)) {
+          currentStreak = 1
+        }
+        
+        // Check each subsequent completion
+        for (let i = 1; i < habitCompletions.length; i++) {
+          const currentDate = parseISO(habitCompletions[i].date)
+          
+          // Check if the habit was active on both dates
+          if (isHabitActiveOnDate(habit, previousDate) && isHabitActiveOnDate(habit, currentDate)) {
+            // Calculate the difference in days
+            const timeDiff = currentDate.getTime() - previousDate.getTime()
+            const dayDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+            
+            // If it's the next day, continue the streak
+            if (dayDiff === 1) {
+              currentStreak++
+            } 
+            // If it's the same day (shouldn't happen but just in case), don't increment
+            else if (dayDiff === 0) {
+              // Do nothing
+            }
+            // If there's a gap, end the current streak and start a new one
+            else {
+              maxStreak = Math.max(maxStreak, currentStreak)
+              currentStreak = 1
+            }
+          } else {
+            // If habit wasn't active on one of the dates, end the streak
+            maxStreak = Math.max(maxStreak, currentStreak)
+            currentStreak = isHabitActiveOnDate(habit, currentDate) ? 1 : 0
+          }
+          
+          previousDate = currentDate
+        }
+        
+        // Don't forget the final streak
+        maxStreak = Math.max(maxStreak, currentStreak)
+        longestStreak = maxStreak
+      }
       
       return {
         ...habit,
@@ -93,6 +144,13 @@ const StreakAnalytics: React.FC = () => {
             <div key={habit.id} className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
               <div className="flex-1">
                 <div className="font-medium text-foreground">{habit.name}</div>
+                {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Active: {habit.daysOfWeek.map(day => 
+                      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]
+                    ).join(', ')}
+                  </div>
+                )}
               </div>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center">

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useHabitStore } from '../stores/habitStore'
-import { Habit, Completion } from '../utils/dateUtils'
+import { Habit, Completion, isHabitActiveOnDate } from '../utils/dateUtils'
+import { parseISO } from 'date-fns'
 
 const PerformanceBreakdown: React.FC = () => {
   const { habits, completions } = useHabitStore()
@@ -11,9 +12,21 @@ const PerformanceBreakdown: React.FC = () => {
       // Get all completions for this habit
       const habitCompletions = completions.filter(c => c.habitId === habit.id)
       
-      // Calculate completion percentage
-      const completionPercentage = habits.length > 0 
-        ? Math.round((habitCompletions.length / habits.length) * 100)
+      // Count the number of days this habit was active
+      const uniqueDates = Array.from(new Set(completions.map(c => c.date)))
+      let activeDaysCount = 0
+      
+      uniqueDates.forEach(dateString => {
+        const date = parseISO(dateString)
+        // Count this date only if the habit was active on this date
+        if (isHabitActiveOnDate(habit, date)) {
+          activeDaysCount++
+        }
+      })
+      
+      // Calculate completion percentage based on active days
+      const completionPercentage = activeDaysCount > 0 
+        ? Math.round((habitCompletions.length / activeDaysCount) * 100)
         : 0
       
       // Determine qualitative label
@@ -30,6 +43,7 @@ const PerformanceBreakdown: React.FC = () => {
       return {
         ...habit,
         completions: habitCompletions.length,
+        activeDays: activeDaysCount,
         percentage: completionPercentage,
         label,
         labelColor

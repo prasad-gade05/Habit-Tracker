@@ -1,40 +1,63 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { getCompletionPercentageForDate } from "../utils/dateUtils";
+import { isHabitActiveOnDate } from "../utils/dateUtils";
 import {
   format,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
-  addWeeks,
+  subDays,
 } from "date-fns";
 
 const WeeklyPatterns: React.FC = () => {
-  const { habits, completions } = useHabitStore();
+  const { habits, completions, isHabitCompletedOnDate } = useHabitStore();
 
-  // Get days of the current week
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
-  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 0 });
-  const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  // Calculate patterns based on historical data (last 30 days)
+  const dayPatterns = useMemo(() => {
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const patterns = dayNames.map((dayName, index) => {
+      // Collect data for this day of the week over the last 30 days
+      const percentages: number[] = [];
+      const today = new Date();
+      
+      // Go back 30 days
+      for (let i = 0; i < 30; i++) {
+        const date = subDays(today, i);
+        // Check if this date matches the day of the week we're analyzing
+        if (date.getDay() === index) {
+          const dateString = format(date, "yyyy-MM-dd");
+          
+          // Get active habits for this specific date
+          const activeHabits = habits.filter(habit => 
+            isHabitActiveOnDate(habit, date)
+          );
+          
+          // If there are no active habits for this date, skip it
+          if (activeHabits.length === 0) {
+            continue;
+          }
+          
+          // Count completed active habits for this date
+          const completedHabits = activeHabits.filter(habit => 
+            isHabitCompletedOnDate(habit.id, dateString)
+          ).length;
+          
+          // Calculate percentage for this date
+          const percentage = Math.round((completedHabits / activeHabits.length) * 100);
+          percentages.push(percentage);
+        }
+      }
+      
+      // Calculate average percentage for this day
+      const averagePercentage = percentages.length > 0 
+        ? Math.round(percentages.reduce((sum, p) => sum + p, 0) / percentages.length)
+        : 0;
 
-  // Calculate average completion percentage for each day of the week
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const dayPatterns = dayNames.map((dayName, index) => {
-    // For simplicity, we'll calculate based on the current week
-    // In a more advanced implementation, we would analyze historical data
-    const day = weekDays[index];
-    const dateString = format(day, "yyyy-MM-dd");
-    const percentage = getCompletionPercentageForDate(
-      habits,
-      completions,
-      dateString
-    );
+      return {
+        dayName,
+        percentage: averagePercentage,
+      };
+    });
 
-    return {
-      dayName,
-      percentage,
-    };
-  });
+    return patterns;
+  }, [habits, completions, isHabitCompletedOnDate]);
 
   // Find the best day
   const bestDay = dayPatterns.reduce((best, current) =>

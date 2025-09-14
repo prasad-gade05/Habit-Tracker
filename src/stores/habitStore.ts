@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { db } from "../lib/db";
-import { Habit, Completion } from "../utils/dateUtils";
+import { Habit, Completion, isHabitActiveOnDate } from "../utils/dateUtils";
 import { getToday } from "../utils/dateUtils";
 
 interface HabitStore {
@@ -14,22 +14,27 @@ interface HabitStore {
   addHabit: (
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    daysOfWeek?: number[]
   ) => Promise<void>;
   updateHabit: (
     id: string,
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    daysOfWeek?: number[]
   ) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
   toggleCompletion: (habitId: string, date?: string) => Promise<void>;
   getCompletionsForDate: (date: string) => Completion[];
   isHabitCompletedOnDate: (habitId: string, date: string) => boolean;
-  getActiveHabitsCount: () => number;
-  getCompletedTodayCount: () => number;
-  getCompletionRate: () => number;
+  getActiveHabitsCount: (date?: string) => number;
+  getCompletedTodayCount: (date?: string) => number;
+  getCompletionRate: (date?: string) => number;
   getPerfectDaysCount: () => number;
+  getHabitsForDay: (dayOfWeek: number) => Habit[];
+  getTotalHabitsCount: () => number;
+  getInactiveHabitsCount: (date?: string) => number;
 }
 
 export const useHabitStore = create<HabitStore>((set, get) => ({
@@ -52,14 +57,15 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  addHabit: async (name, description, color) => {
+  addHabit: async (name, description, color, daysOfWeek) => {
     try {
-      const id = await db.addHabit(name, description, color);
+      const id = await db.addHabit(name, description, color, daysOfWeek);
       const newHabit = {
         id,
         name,
         description,
         color,
+        daysOfWeek,
         createdAt: new Date().toISOString(),
       };
       set((state) => ({ habits: [...state.habits, newHabit], error: null }));
@@ -79,12 +85,12 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  updateHabit: async (id, name, description, color) => {
+  updateHabit: async (id, name, description, color, daysOfWeek) => {
     try {
-      await db.updateHabit(id, name, description, color);
+      await db.updateHabit(id, name, description, color, daysOfWeek);
       set((state) => ({
         habits: state.habits.map((habit) =>
-          habit.id === id ? { ...habit, name, description, color } : habit
+          habit.id === id ? { ...habit, name, description, color, daysOfWeek } : habit
         ),
         error: null,
       }));
@@ -147,50 +153,129 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
   },
 
   isHabitCompletedOnDate: (habitId, date) => {
-    const { completions } = get();
+    const { completions, habits } = get();
+    // Find the habit
+    const habit = habits.find(h => h.id === habitId);
+    if (habit) {
+      // If habit is not active on this date, it's not considered completed
+      if (!isHabitActiveOnDate(habit, new Date(date))) {
+        return false;
+      }
+    }
+    // Otherwise, check if there's an actual completion
     return completions.some(
       (completion) => completion.habitId === habitId && completion.date === date
     );
   },
 
-  getActiveHabitsCount: () => {
+  getActiveHabitsCount: (date = getToday()) => {
+    const { habits } = get();
+    const currentDate = new Date(date);
+    // Filter habits that are active on the given date
+    const activeHabits = habits.filter(habit => 
+      isHabitActiveOnDate(habit, currentDate)
+    );
+    return activeHabits.length;
+  },
+
+  getInactiveHabitsCount: (date = getToday()) => {
+    const { habits } = get();
+    const currentDate = new Date(date);
+    // Filter habits that are NOT active on the given date
+    const inactiveHabits = habits.filter(habit => 
+      !isHabitActiveOnDate(habit, currentDate)
+    );
+    return inactiveHabits.length;
+  },
+
+  getTotalHabitsCount: () => {
     const { habits } = get();
     return habits.length;
   },
 
-  getCompletedTodayCount: () => {
-    const { getCompletionsForDate } = get();
-    const today = getToday();
-    return getCompletionsForDate(today).length;
+  getCompletedTodayCount: (date = getToday()) => {
+    const { habits, completions } = get();
+    // Count only actually completed habits (not inactive ones)
+    return habits.filter(habit => {
+      // Only count if habit is active today
+      if (isHabitActiveOnDate(habit, new Date(date))) {
+        // And actually completed
+        return completions.some(
+          (completion) => completion.habitId === habit.id && completion.date === date
+        );
+      }
+      return false;
+    }).length;
   },
 
-  getCompletionRate: () => {
+  getCompletionRate: (date = getToday()) => {
     const { getActiveHabitsCount, getCompletedTodayCount } = get();
-    const activeHabits = getActiveHabitsCount();
+    const activeHabits = getActiveHabitsCount(date);
     if (activeHabits === 0) return 0;
-    const completedToday = getCompletedTodayCount();
-    return Math.round((completedToday / activeHabits) * 100);
+    // For completion rate, we need to count only active habits that are completed
+    const { habits, isHabitCompletedOnDate } = get();
+    const completedActiveHabits = habits.filter(habit => {
+      // Only count active habits
+      if (isHabitActiveOnDate(habit, new Date(date))) {
+        // And only those that are actually completed (not just inactive)
+        return isHabitCompletedOnDate(habit.id, date) && 
+               // But we need to check if they're actually completed, not just considered completed due to inactivity
+               get().completions.some(
+                 (completion) => completion.habitId === habit.id && completion.date === date
+               );
+      }
+      return false;
+    }).length;
+    return Math.round((completedActiveHabits / activeHabits) * 100);
   },
 
   getPerfectDaysCount: () => {
-    const { habits, completions } = get();
+    const { habits, completions, isHabitCompletedOnDate } = get();
     if (habits.length === 0) return 0;
 
-    // Group completions by date
-    const completionsByDate: Record<string, number> = {};
-    completions.forEach((completion) => {
-      completionsByDate[completion.date] =
-        (completionsByDate[completion.date] || 0) + 1;
-    });
+    // Get all unique dates from completions
+    const dates = [...new Set(completions.map(c => c.date))];
+    
+    // Also check today even if there are no completions for it
+    const today = getToday();
+    if (!dates.includes(today)) {
+      dates.push(today);
+    }
 
-    // Count days where all habits were completed
     let perfectDays = 0;
-    Object.values(completionsByDate).forEach((count) => {
-      if (count === habits.length) {
+
+    // For each date, check if all active habits were completed
+    dates.forEach(date => {
+      // Get active habits for this specific date
+      const activeHabitsForDate = habits.filter(habit => 
+        isHabitActiveOnDate(habit, new Date(date))
+      );
+      
+      // If there are no active habits for this date, it's not a perfect day
+      if (activeHabitsForDate.length === 0) {
+        return;
+      }
+
+      // Count how many active habits were actually completed on this date
+      const completedActiveHabits = activeHabitsForDate.filter(habit => 
+        isHabitCompletedOnDate(habit.id, date)
+      ).length;
+
+      // Check if all active habits were completed on this date
+      if (completedActiveHabits === activeHabitsForDate.length) {
         perfectDays++;
       }
     });
 
     return perfectDays;
+  },
+
+  getHabitsForDay: (dayOfWeek) => {
+    const { habits } = get();
+    return habits.filter(
+      (habit) =>
+        !habit.daysOfWeek || // If daysOfWeek is undefined, habit is active on all days
+        habit.daysOfWeek.includes(dayOfWeek)
+    );
   },
 }));

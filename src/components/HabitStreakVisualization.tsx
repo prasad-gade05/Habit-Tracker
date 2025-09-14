@@ -1,39 +1,49 @@
 import React, { useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { Habit } from "../utils/dateUtils";
+import { Habit, isHabitActiveOnDate } from "../utils/dateUtils";
 import {
   calculateHabitStreak,
-  isHabitCompletedToday,
 } from "../utils/streakUtils";
 import { Flame, Calendar } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 const HabitStreakVisualization: React.FC = () => {
-  const { habits, completions } = useHabitStore();
+  const { habits, completions, isHabitCompletedOnDate } = useHabitStore();
 
   // Calculate streaks for each habit
   const habitsWithStreaks = useMemo(() => {
     const today = format(new Date(), "yyyy-MM-dd");
+    const todayDate = parseISO(today);
 
     return habits.map((habit) => {
-      const currentStreak = calculateHabitStreak(habit, completions, today);
-      const isCompletedToday = isHabitCompletedToday(
-        habit.id,
-        completions,
-        today
-      );
+      // For inactive habits, we don't calculate streaks
+      const isHabitActiveToday = isHabitActiveOnDate(habit, todayDate);
+      
+      let currentStreak = 0;
+      let isCompletedToday = false;
+      
+      if (isHabitActiveToday) {
+        currentStreak = calculateHabitStreak(habit, completions, today);
+        isCompletedToday = isHabitCompletedOnDate(habit.id, today);
+      } else {
+        // For inactive habits, they are not considered completed and have 0 streak
+        isCompletedToday = false;
+        currentStreak = 0;
+      }
 
       return {
         ...habit,
         currentStreak,
         isCompletedToday,
+        isHabitActiveToday,
       };
     });
-  }, [habits, completions]);
+  }, [habits, completions, isHabitCompletedOnDate]);
 
-  // Get habits with the longest streaks (top 5)
+  // Get habits with the longest streaks (top 5) - only active habits
   const topStreakHabits = useMemo(() => {
     return [...habitsWithStreaks]
+      .filter(habit => habit.isHabitActiveToday) // Only consider active habits
       .sort((a, b) => b.currentStreak - a.currentStreak)
       .slice(0, 5);
   }, [habitsWithStreaks]);
@@ -112,9 +122,14 @@ const HabitStreakVisualization: React.FC = () => {
                         <span className="font-medium text-foreground truncate">
                           {habit.name}
                         </span>
-                        {habit.isCompletedToday && (
+                        {habit.isCompletedToday && habit.isHabitActiveToday && (
                           <span className="ml-2 text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full">
                             Today
+                          </span>
+                        )}
+                        {!habit.isHabitActiveToday && (
+                          <span className="ml-2 text-xs bg-gray-500/20 text-gray-500 px-2 py-0.5 rounded-full">
+                            Inactive Today
                           </span>
                         )}
                       </div>

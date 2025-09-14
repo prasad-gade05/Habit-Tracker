@@ -4,7 +4,7 @@ import { Habit, Completion } from "../utils/dateUtils";
 interface HabitRecord extends Habit {
   id: string;
   description?: string;
-  daysOfWeek?: number[]; // Array of day numbers (0-6) where 0 is Sunday
+  days?: number[]; // Array of day numbers (0-6) where 0 is Sunday
 }
 
 interface CompletionRecord extends Completion {
@@ -23,9 +23,9 @@ class HabitTrackerDB extends Dexie {
       console.log("Database version change detected", event);
     });
 
-    // Updated schema to version 3 to include daysOfWeek field
-    this.version(3).stores({
-      habits: "id, name, description, color, createdAt, daysOfWeek",
+    // Updated schema to version 2 to include days field
+    this.version(2).stores({
+      habits: "id, name, description, color, createdAt, days",
       completions: "id, habitId, date, [habitId+date]", // Composite index for faster queries
     });
 
@@ -41,7 +41,7 @@ class HabitTrackerDB extends Dexie {
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    days?: number[]
   ): Promise<string> {
     try {
       const id = await this.habits.add({
@@ -49,8 +49,7 @@ class HabitTrackerDB extends Dexie {
         name,
         description,
         color,
-        daysOfWeek:
-          daysOfWeek && daysOfWeek.length > 0 ? daysOfWeek : undefined, // Only store daysOfWeek if specified
+        days: days && days.length > 0 ? days : undefined, // Only store days if specified
         createdAt: new Date().toISOString(),
       });
       return id as string;
@@ -68,15 +67,9 @@ class HabitTrackerDB extends Dexie {
     id: string,
     name: string,
     description?: string,
-    color?: string,
-    daysOfWeek?: number[]
+    color?: string
   ): Promise<void> {
-    await this.habits.update(id, {
-      name,
-      description,
-      color,
-      daysOfWeek: daysOfWeek && daysOfWeek.length > 0 ? daysOfWeek : undefined,
-    });
+    await this.habits.update(id, { name, description, color });
   }
 
   async deleteHabit(id: string): Promise<void> {

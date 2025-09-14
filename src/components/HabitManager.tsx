@@ -24,10 +24,11 @@ const HabitManager: React.FC = () => {
   const handleUpdateHabit = (
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    daysOfWeek?: number[]
   ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description, color);
+      updateHabit(editingHabit.id, name, description, color, daysOfWeek);
     }
   };
 
@@ -69,6 +70,17 @@ const HabitManager: React.FC = () => {
                 {habit.description && (
                   <div className="text-sm text-muted-foreground mt-1">
                     {habit.description}
+                  </div>
+                )}
+                {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Active on:{" "}
+                    {habit.daysOfWeek
+                      .map(
+                        (day) =>
+                          ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]
+                      )
+                      .join(", ")}
                   </div>
                 )}
               </div>

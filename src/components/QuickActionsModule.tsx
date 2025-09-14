@@ -21,9 +21,10 @@ const QuickActionsModule: React.FC = () => {
   const handleAddHabit = (
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    days?: number[]
   ) => {
-    addHabit(name, description, color);
+    addHabit(name, description, color, days);
   };
 
   return (

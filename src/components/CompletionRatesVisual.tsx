@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { getCompletionPercentageForDate, getLast365Days } from "../utils/dateUtils";
+import { getCompletionPercentageForDate, getLast365Days, isHabitActiveOnDate } from "../utils/dateUtils";
 import { format, parseISO } from "date-fns";
 
 const CompletionRatesVisual: React.FC = () => {
@@ -69,6 +69,11 @@ const CompletionRatesVisual: React.FC = () => {
     if (percentage < 80) return "bg-blue-500";
     return "bg-green-500";
   };
+
+  // Calculate total habits
+  const totalHabits = useMemo(() => {
+    return habits.length;
+  }, [habits]);
 
   return (
     <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
@@ -144,7 +149,7 @@ const CompletionRatesVisual: React.FC = () => {
       
       <div className="mt-6 pt-4 border-t border-border">
         <div className="text-sm text-muted-foreground">
-          Based on {habits.length} active habits
+          Based on {totalHabits} total habits
         </div>
       </div>
     </div>

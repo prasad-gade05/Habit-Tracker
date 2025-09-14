@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Habit } from "../utils/dateUtils";
+import { Habit, isHabitActiveOnDate } from "../utils/dateUtils";
 import { useHabitStore } from "../stores/habitStore";
 import { getToday } from "../utils/dateUtils";
+import { parseISO } from "date-fns";
 import { Check, Edit, Trash2 } from "lucide-react";
 import HabitModal from "./HabitModal";
 import {
@@ -27,17 +28,23 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const today = getToday();
   const isCompleted = isHabitCompletedOnDate(habit.id, today);
+  // Check if habit is active today
+  const isHabitActiveToday = isHabitActiveOnDate(habit, parseISO(today));
 
   const handleToggle = () => {
-    toggleCompletion(habit.id, today);
+    // Only allow toggling for active habits
+    if (isHabitActiveToday) {
+      toggleCompletion(habit.id, today);
+    }
   };
 
   const handleUpdateHabit = (
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    days?: number[]
   ) => {
-    updateHabit(habit.id, name, description, color);
+    updateHabit(habit.id, name, description, color, days);
   };
 
   const handleDeleteHabit = () => {
@@ -49,7 +56,7 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
       <div
         className={`flex items-center p-3 rounded-lg transition-all duration-200 ${
           isCompleted ? "bg-secondary/50" : "hover:bg-secondary/30"
-        }`}
+        } ${!isHabitActiveToday ? "bg-gray-100 dark:bg-gray-800 opacity-60" : ""}`}
         style={{
           borderLeft: habit.color
             ? `4px solid ${habit.color}`
@@ -57,7 +64,9 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
         }}
       >
         <div
-          className={`flex items-center justify-center w-5 h-5 rounded-md border mr-3 transition-all duration-200 cursor-pointer ${
+          className={`flex items-center justify-center w-5 h-5 rounded-md border mr-3 transition-all duration-200 ${
+            isHabitActiveToday ? "cursor-pointer" : "cursor-not-allowed"
+          } ${
             isCompleted
               ? "border-current"
               : "border-muted-foreground hover:border-primary"
@@ -67,21 +76,31 @@ const HabitRowItem: React.FC<HabitRowItemProps> = ({ habit }) => {
               ? habit.color || "#3B82F6"
               : "transparent",
           }}
-          onClick={handleToggle}
+          onClick={isHabitActiveToday ? handleToggle : undefined}
         >
           {isCompleted && <Check className="w-3 h-3 text-white" />}
         </div>
-        <div className="flex-1 cursor-pointer" onClick={handleToggle}>
+        <div 
+          className={`flex-1 ${
+            isHabitActiveToday ? "cursor-pointer" : "cursor-not-allowed"
+          }`}
+          onClick={isHabitActiveToday ? handleToggle : undefined}
+        >
           <div
             className={`text-foreground text-sm ${
               isCompleted ? "opacity-70 line-through" : ""
-            }`}
+            } ${!isHabitActiveToday ? "text-gray-500 dark:text-gray-400" : ""}`}
           >
             {habit.name}
           </div>
           {habit.description && (
             <div className="text-xs text-muted-foreground mt-1">
               {habit.description}
+            </div>
+          )}
+          {!isHabitActiveToday && (
+            <div className="text-xs text-muted-foreground mt-1">
+              Not scheduled for today
             </div>
           )}
         </div>

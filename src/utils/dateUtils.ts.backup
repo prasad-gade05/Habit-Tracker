@@ -17,7 +17,7 @@ export interface Habit {
   description?: string;
   color?: string;
   createdAt: string; // ISO string
-  daysOfWeek?: number[]; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday. If undefined, habit is active on all days
+  days?: number[]; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday. If undefined, habit is active on all days
 }
 
 export interface Completion {
@@ -51,25 +51,9 @@ export const isHabitCompletedOnDate = (
   completions: Completion[],
   date: string
 ): boolean => {
-  // Find the habit
-  // Note: This function should be called in a context where habits are available
-  // For now, we'll just check if there's a completion
   return completions.some(
     (completion) => completion.habitId === habitId && completion.date === date
   );
-};
-
-export const isHabitActiveOnDate = (habit: Habit, date: Date): boolean => {
-  // If no days are specified, the habit is active on all days
-  if (!habit.daysOfWeek || habit.daysOfWeek.length === 0) {
-    return true;
-  }
-
-  // Get the day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-  const dayOfWeek = date.getDay();
-
-  // Check if the habit is scheduled for this day
-  return habit.daysOfWeek.includes(dayOfWeek);
 };
 
 export const getCompletionPercentageForDate = (
@@ -77,20 +61,11 @@ export const getCompletionPercentageForDate = (
   completions: Completion[],
   date: string
 ): number => {
-  // Filter habits that are active on the given date
-  const activeHabits = habits.filter(habit => 
-    isHabitActiveOnDate(habit, parseISO(date))
-  );
-  
-  if (activeHabits.length === 0) return 0;
+  if (habits.length === 0) return 0;
 
   const completionsForDate = getCompletionsForDate(completions, date);
-  // Count only completions for active habits
-  const completedHabits = activeHabits.filter(habit => 
-    isHabitCompletedOnDate(habit.id, completions, date)
-  ).length;
-  
-  const totalHabits = activeHabits.length;
+  const completedHabits = completionsForDate.length;
+  const totalHabits = habits.length;
 
   return Math.round((completedHabits / totalHabits) * 100);
 };
@@ -112,4 +87,17 @@ export const isDateInRange = (
   endDate: Date
 ): boolean => {
   return !isBefore(date, startDate) && !isAfter(date, endDate);
+};
+
+export const isHabitActiveOnDate = (habit: Habit, date: Date): boolean => {
+  // If no days are specified, the habit is active on all days
+  if (!habit.days || habit.days.length === 0) {
+    return true;
+  }
+  
+  // Get the day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+  const dayOfWeek = date.getDay();
+  
+  // Check if the habit is scheduled for this day
+  return habit.days.includes(dayOfWeek);
 };

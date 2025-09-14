@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useHabitStore } from '../stores/habitStore'
-import { Completion } from '../utils/dateUtils'
+import { Completion, isHabitActiveOnDate } from '../utils/dateUtils'
 import { parseISO, isWeekend, isMonday, isTuesday, isWednesday, isThursday, isFriday, isSaturday, isSunday } from 'date-fns'
 import { Lightbulb } from 'lucide-react'
 
@@ -20,36 +20,29 @@ const PatternRecognition: React.FC = () => {
       'Saturday': { total: 0, completed: 0 }
     }
     
-    // Count completions by day
-    completions.forEach(completion => {
-      const date = parseISO(completion.date)
+    // Get all unique dates from completions
+    const uniqueDates = Array.from(new Set(completions.map(c => c.date)))
+    
+    // For each date, count active habits and completed habits
+    uniqueDates.forEach(dateString => {
+      const date = parseISO(dateString)
       const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
       
-      if (dayCounts[dayName]) {
-        dayCounts[dayName].completed += 1
-      }
-    })
-    
-    // Count total possible completions by day (habits * number of occurrences)
-    const datesByDay: Record<string, Set<string>> = {
-      'Sunday': new Set(),
-      'Monday': new Set(),
-      'Tuesday': new Set(),
-      'Wednesday': new Set(),
-      'Thursday': new Set(),
-      'Friday': new Set(),
-      'Saturday': new Set()
-    }
-    
-    completions.forEach(completion => {
-      const date = parseISO(completion.date)
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
-      datesByDay[dayName].add(completion.date)
-    })
-    
-    // Calculate totals
-    Object.keys(datesByDay).forEach(day => {
-      dayCounts[day].total = datesByDay[day].size * habits.length
+      // Get habits active on this specific date
+      const activeHabits = habits.filter(habit => isHabitActiveOnDate(habit, date))
+      
+      // Count total possible completions for this date
+      dayCounts[dayName].total += activeHabits.length
+      
+      // Count actual completions for this date
+      const completionsForDate = completions.filter(c => c.date === dateString)
+      completionsForDate.forEach(completion => {
+        const habit = habits.find(h => h.id === completion.habitId)
+        // Only count completion if habit was active on this date
+        if (habit && isHabitActiveOnDate(habit, date)) {
+          dayCounts[dayName].completed += 1
+        }
+      })
     })
     
     // Calculate percentages

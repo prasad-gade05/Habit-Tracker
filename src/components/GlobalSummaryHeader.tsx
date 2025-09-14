@@ -1,6 +1,7 @@
 import React from "react";
 import { useHabitStore } from "../stores/habitStore";
 import GlobalSummaryCard from "./GlobalSummaryCard";
+import { getToday } from "../utils/dateUtils";
 
 const GlobalSummaryHeader: React.FC = () => {
   const {
@@ -10,15 +11,16 @@ const GlobalSummaryHeader: React.FC = () => {
     getPerfectDaysCount,
   } = useHabitStore();
 
-  const activeHabits = getActiveHabitsCount();
-  const completedToday = getCompletedTodayCount();
-  const completionRate = getCompletionRate();
+  const today = getToday();
+  const activeHabits = getActiveHabitsCount(today);
+  const completedToday = getCompletedTodayCount(today);
+  const completionRate = getCompletionRate(today);
   const perfectDays = getPerfectDaysCount();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <GlobalSummaryCard
-        label="Active Habits"
+        label="Active Habits Today"
         value={activeHabits}
         type="activeHabits"
       />

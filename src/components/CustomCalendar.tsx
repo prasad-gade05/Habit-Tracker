@@ -32,10 +32,11 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ onDateSelect, selectedD
     for (let i = 0; i < 7; i++) {
       const formattedDate = format(day, "yyyy-MM-dd");
       const dayCompletions = getCompletionsForDate(completions, formattedDate);
-      const completionCount = dayCompletions.length;
-      const completionPercentage = habits.length > 0 
-        ? Math.round((completionCount / habits.length) * 100) 
-        : 0;
+      const completionPercentage = getCompletionPercentageForDate(habits, completions, formattedDate);
+      const completionCount = habits.filter(habit => {
+        // Count habits that are actually completed (not just inactive)
+        return dayCompletions.some(c => c.habitId === habit.id);
+      }).length;
 
       days.push({
         date: day,

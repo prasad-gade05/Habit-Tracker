@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { Habit, Completion } from "../utils/dateUtils";
+import { Habit, Completion, isHabitActiveOnDate } from "../utils/dateUtils";
 import {
   Dialog,
   DialogContent,
@@ -69,10 +69,11 @@ const CalendarView: React.FC = () => {
   const handleUpdateHabit = (
     name: string,
     description?: string,
-    color?: string
+    color?: string,
+    days?: number[]
   ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description, color);
+      updateHabit(editingHabit.id, name, description, color, days);
       setIsEditModalOpen(false);
       setEditingHabit(null);
     }
@@ -119,82 +120,103 @@ const CalendarView: React.FC = () => {
 
           <div className="space-y-3 mt-3 max-h-96 overflow-y-auto">
             {habits.length > 0 ? (
-              habits.map((habit) => (
-                <div
-                  key={habit.id}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors"
-                  style={{
-                    borderLeft: habit.color
-                      ? `3px solid ${habit.color}`
-                      : "3px solid #3B82F6",
-                  }}
-                >
-                  <Checkbox
-                    id={habit.id}
-                    checked={isHabitCompleted(habit.id)}
-                    onCheckedChange={() => handleToggleCompletion(habit.id)}
-                  />
-                  <div className="flex-1">
-                    <label
-                      htmlFor={habit.id}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: habit.color || "#3B82F6" }}
-                        />
-                        <span>{habit.name}</span>
-                      </div>
-                      {habit.description && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {habit.description}
+              habits.map((habit) => {
+                // Check if habit is active on the selected date
+                const isHabitActiveOnSelectedDate = selectedDate 
+                  ? isHabitActiveOnDate(habit, parseISO(selectedDate)) 
+                  : false;
+                const habitCompleted = isHabitCompleted(habit.id);
+                
+                return (
+                  <div
+                    key={habit.id}
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors"
+                    style={{
+                      borderLeft: habit.color
+                        ? `3px solid ${habit.color}`
+                        : "3px solid #3B82F6",
+                    }}
+                  >
+                    <Checkbox
+                      id={habit.id}
+                      checked={habitCompleted}
+                      onCheckedChange={() => {
+                        // Only allow toggling for active habits
+                        if (isHabitActiveOnSelectedDate && selectedDate) {
+                          handleToggleCompletion(habit.id);
+                        }
+                      }}
+                      disabled={!isHabitActiveOnSelectedDate || !selectedDate}
+                    />
+                    <div className="flex-1">
+                      <label
+                        htmlFor={habit.id}
+                        className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
+                          !isHabitActiveOnSelectedDate ? "text-gray-500 dark:text-gray-400" : ""
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: habit.color || "#3B82F6" }}
+                          />
+                          <span>{habit.name}</span>
                         </div>
-                      )}
-                    </label>
-                  </div>
-                  <div className="flex space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => startEditing(habit)}
-                    >
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete "{habit.name}" and all
-                            of its tracked history. This action cannot be
-                            undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteHabit(habit.id)}
-                            className="bg-destructive hover:bg-destructive/90"
+                        {habit.description && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {habit.description}
+                          </div>
+                        )}
+                        {!isHabitActiveOnSelectedDate && selectedDate && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Not scheduled for this date
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => startEditing(habit)}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
                           >
-                            Confirm Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete "{habit.name}" and all
+                              of its tracked history. This action cannot be
+                              undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteHabit(habit.id)}
+                              className="bg-destructive hover:bg-destructive/90"
+                            >
+                              Confirm Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <p className="text-muted-foreground text-center py-4 text-sm">
                 No habits to display. Add some habits to get started!
