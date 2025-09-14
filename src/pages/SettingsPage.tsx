@@ -26,7 +26,6 @@ import {
 import { useTheme } from "../components/theme-provider";
 import HabitManager from "../components/HabitManager";
 import NavigationModule from "../components/NavigationModule";
-import QuickActionsModule from "../components/QuickActionsModule";
 
 const SettingsPage: React.FC = () => {
   const { habits, completions } = useHabitStore();
@@ -117,11 +116,6 @@ const SettingsPage: React.FC = () => {
         <p className="text-muted-foreground text-sm">
           Manage your data and preferences
         </p>
-      </div>
-
-      {/* Quick Actions Module */}
-      <div className="mb-5">
-        <QuickActionsModule />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
