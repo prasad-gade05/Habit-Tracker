@@ -9,6 +9,7 @@ import QuickActionsModule from "../components/QuickActionsModule";
 import ConsistencyCard from "../components/ConsistencyCard";
 import MyHabitsModule from "../components/MyHabitsModule";
 import CompletionRatesVisual from "../components/CompletionRatesVisual";
+import HabitCorrelations from "../components/HabitCorrelations";
 
 const AnalyticsPage: React.FC = () => {
   const { fetchAllData } = useHabitStore();
@@ -52,6 +53,7 @@ const AnalyticsPage: React.FC = () => {
           <QuickActionsModule />
           <ConsistencyCard />
           <CompletionRatesVisual />
+          <HabitCorrelations />
         </div>
 
         {/* Right column (main content) */}
