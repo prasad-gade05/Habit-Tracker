@@ -1,4 +1,4 @@
-Objective: Upgrade the current application UI (as shown in the screenshot) to match the feature set and layout of the reference PDF, using the established "Cyber Noir" design system.
+Objective: Upgrade the current application UI  using the established "Cyber Noir" design system.
 Analysis of Missing Features:
 Application Header: The simple left-aligned title is missing the intended branding and motivational messaging.
 Summary Card Icons: The four main summary cards lack visual icons, making them less scannable and engaging.

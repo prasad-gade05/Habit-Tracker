@@ -1,91 +1,89 @@
-Objective: Upgrade the current application UI (as shown in the screenshot) to match the feature set and layout of the reference PDF, using the established "Cyber Noir" design system.
-Analysis of Missing Features:
-Application Header: The simple left-aligned title is missing the intended branding and motivational messaging.
-Summary Card Icons: The four main summary cards lack visual icons, making them less scannable and engaging.
-Core Layout Structure: The current single-column layout is incorrect. The target design uses a sophisticated two-column dashboard layout.
-Left Sidebar Modules: The entire left sidebar, which includes navigation, quick daily actions, and a motivational card, is completely absent.
-Main Content Modules: The main content area is empty. The critical "My Habits" list, which is the primary interface for managing and viewing habits, is missing.
-Directive 1: Implement the Main Application Header
-Description: The current header is minimal. Implement a centered, multi-line header to establish a strong brand identity and set a motivational tone.
+Objective: Upgrade the existing "Analytics & Insights" page . This involves adding entirely new components and significantly enhancing existing ones. All implementations must adhere to the "Cyber Noir" design system.
+Analysis of Missing & Incomplete Features:
+Missing Component: "Completion Rates" Card: A primary module for per-habit performance analysis is completely absent.
+Missing Component: "Progress Momentum" Card: The predictive engine for tracking habit momentum is missing.
+Missing Component: "Habit Correlations" Card: The module for discovering relationships between habits is missing.
+Missing Component: "7-Day Trend" Card: A small but vital card for tracking short-term trends is missing.
+Incomplete Component: "Streak Analytics": The current implementation is just a placeholder. The target design shows a detailed breakdown.
+Incomplete Component: "Weekly Patterns": The current design is static. The target design is dynamic, highlighting best/worst days and using color more effectively.
+Directive 1: Implement the "Completion Rates" Card
+Description: This is a crucial new module that provides a detailed breakdown of performance for each individual habit, moving beyond the simple "Overall Average" currently shown in the "Performance Distribution" card.
 Implementation Steps:
-Create a header container at the top of the main application body.
-Main Title:
-Text: "Minimal Habit Tracker"
-Styling: text-4xl, font-bold, text-primary (#E5E5E5), text-center.
-Subtitle:
-Text: "Build consistency, one day at a time"
-Styling: text-lg, text-secondary (#A0A0A0), text-center, mt-2.
-Motivational Quote:
-Text: "The compound effect of small habits creates extraordinary results."
-Styling: text-md, text-secondary, italic, text-center, mt-1.
-Directive 2: Enhance the Global Summary Cards
-Description: The four summary cards at the top are functionally present but visually barren. They are missing icons that provide quick visual context for each metric.
+Create a new card component named CompletionRates to the right of the Streak Analytics card.
+Component Breakdown:
+Card Header: A title "Completion Rates."
+Overall Average Display: A prominent section at the top of the card showing the overall average completion rate as a large percentage (e.g., "100%").
+Habit List: Below the average, create a list of HabitCompletionItem components, one for each active habit.
+HabitCompletionItem Sub-Component Details:
+Layout: A flex row with four main elements aligned horizontally. Add a subtle bottom border (border-border) to separate items.
+Element 1: Progress Circle (SVG):
+Create a 40x40 SVG element.
+Draw two circles: a background circle with a stroke of border (#2B2B2B) and a foreground progress circle with a stroke of success (#2EBD59).
+Use stroke-dasharray and stroke-dashoffset on the foreground circle to represent the habit's completion percentage. Animate the stroke-dashoffset when it first appears.
+Overlay the percentage text (e.g., "100%") in the center of the circle.
+Element 2: Habit Name & Rating:
+Display the habit name (e.g., "Data analytics") in text-primary.
+Below the name, display a qualitative rating tag (e.g., "Excellent") in text-success.
+Element 3: Exact Percentage: Display the precise completion percentage with one decimal place (e.g., "100.0%") in text-secondary.
+Element 4: Consistency Label: Display a label indicating consistency (e.g., "Consistent") in text-secondary.
+Directive 2: Implement the "Progress Momentum" Card
+Description: This is a predictive analytics module designed to act as an early warning system for habits that are losing consistency. It is a completely new feature.
 Implementation Steps:
-For each of the four summary cards (Active Habits, Completed Today, Completion Rate, Perfect Days), add an icon element.
-Visual Structure:
-The icon should be placed inside a colored, circular container.
-This container should be positioned in the top-left corner of the card, slightly overlapping the card's padding for a modern look. Use absolute positioning relative to the card.
-Container Styling: w-10 h-10, rounded-full, flex, items-center, justify-center.
-Icon Styling: The icon itself should be size-5, with a stroke of white.
-Specific Icons and Colors (from lucide-react library):
-Active Habits:
-Icon: <Activity />
-Container Background: A muted blue, e.g., bg-blue-500/80.
-Completed Today:
-Icon: <CheckCircle2 />
-Container Background: The success color, bg-success/80 (#2EBD59).
-Completion Rate:
-Icon: <TrendingUp />
-Container Background: The accent color, bg-accent/80 (#3A7DFF).
-Perfect Days:
-Icon: <Award />
-Container Background: The warning color, bg-warning/80 (#F59E0B).
-Directive 3: Re-architect to a Two-Column Dashboard Layout
-Description: This is the most critical structural change. The screenshot's single-column layout must be replaced with the PDF's two-column grid. This creates a clear separation between daily actions/navigation and main content/overview.
+Create a new card component named ProgressMomentum placed below the Streak Analytics and Completion Rates cards, spanning the full width.
+Component Breakdown:
+Card Header: A title "Progress Momentum" and a subtitle "Track your habit momentum and predict future success."
+Overall Momentum Score: A circular display in the header showing the overall score (initially "0").
+Habit Momentum List: A list of HabitMomentumItem components.
+Summary Footer: A flex container at the bottom with three summary "pills": "On Track," "At Risk," and "Struggling."
+HabitMomentumItem Sub-Component Details:
+Layout: A flex row with the habit name on the left and status on the right.
+Habit Name & Status: Display the habit name. Next to it, show a status tag with an icon.
+Status: Stagnant: Use a gray tag (bg-secondary/20, text-secondary).
+Status: Needs Attention: Use a warning tag (bg-warning/20, text-warning) accompanied by an <AlertTriangle /> icon from lucide-react.
+Logic:
+Calculate momentum by comparing the rolling 7-day completion average against the rolling 30-day average for each habit.
+If 7day_avg < 30day_avg, the status is Needs Attention.
+Otherwise, the status is Stagnant or On Track.
+Summary Footer Visuals:
+Each pill should contain a number and a label.
+On Track: Use text-success.
+At Risk: Use text-warning.
+Struggling: Use a muted red color.
+Directive 3: Implement the "Habit Correlations" Card
+Description: An advanced feature that visualizes which habits users tend to complete together. This module should only appear after sufficient data has been collected.
 Implementation Steps:
-Wrap the main content area of the dashboard in a CSS Grid container.
-Grid Definition:
-display: grid
-grid-template-columns: repeat(1, 1fr) for mobile screens.
-md:grid-template-columns: repeat(3, 1fr) for medium screens and up.
-gap-6 for spacing between columns.
-Column Allocation:
-Left Column (Sidebar): This container will span one of the three grid columns (md:col-span-1). It will hold the Navigation, Quick Actions, and Consistency modules.
-Right Column (Main Content): This container will span the remaining two grid columns (md:col-span-2). It will hold the My Habits, Habit Contribution Chart, and Settings modules.
-Directive 4: Implement the Left Sidebar Modules
-Description: The empty space on the left needs to be populated with three distinct, functional modules as seen in the PDF.
+Create a new card component named HabitCorrelations.
+Conditional Rendering Logic: This card should only render if the user has 2 or more habits and at least 7 days of tracking data.
+Empty/Insufficient Data State:
+If the conditions are not met, display a placeholder inside the card.
+Visuals: Show an icon representing linked nodes (as in the PDF).
+Text: Display the message: "Need at least 2 habits with 7+ days of data to show correlations."
+Data-Rich State (Future Implementation):
+When data is sufficient, display a visualization (e.g., a simple node graph or a heatmap) that shows the strength of the correlation between pairs of habits.
+Directive 4: Implement the "7-Day Trend" Card
+Description: A small, focused module providing a snapshot of performance over the last week. This is a new component.
 Implementation Steps:
-A) Navigation Module:
-Create a card with bg-surface (#1A1A1A).
-Add a title "Navigation."
-Create a list of navigation links: "Overview," "Calendar," "Analytics."
-Styling: Each link should be a button-like element.
-Default State: Transparent background, text-secondary (#A0A0A0).
-Active State: The currently viewed page's link should have a solid bg-accent (#3A7DFF) background and text-primary (#E5E5E5) text.
-B) Quick Actions Module ("Today's Progress"):
-Create a card titled "Quick Actions."
-Below the title, display the progress text (e.g., "4/4") and percentage ("100%").
-Include a thin progress bar that animates its width based on the completion percentage. Use bg-success for the fill.
-Create a list of habits. Each list item should contain:
-The habit name (e.g., "Data analytics").
-A toggle switch on the right.
-Toggle Switch Visuals: Design a custom toggle. It should be a rounded rectangle (bg-border). When toggled on, the background becomes bg-success, and a white circle inside slides to the right.
-C) Consistency "Gamification" Card:
-Create a smaller card at the bottom of the left column.
-Place a large star icon (<Star /> from Lucide) in the center. Style it with a blue-to-purple gradient to make it stand out.
-Add the title: "Outstanding consistency!"
-Add the subtitle: "Consistency creates lasting change."
-Directive 5: Implement the Main Content Modules
-Description: The right-hand side of the dashboard is currently blank except for the contribution chart. It needs the primary "My Habits" list, which is the core of the application's habit management.
-Implementation Steps:
-A) "My Habits" List Module:
-Create a large card that will contain the entire list.
-Header: The card header should be a flex container with the title "My Habits" on the left and a styled "+ Add Habit" button on the right. The button should have bg-accent and text-primary.
-Habit Cards: For each habit, render a dedicated card within this main list. Each of these sub-cards should contain:
-Left Side: A small icon representing the habit, followed by the Habit Name (e.g., "Data analytics") and a small tag indicating the current streak (e.g., "1 day").
-Middle Section: A label "Today's Progress."
-Right Side: A group of action items:
-A "Completed" button.
-Default State: bg-surface, border-success, text-success.
-Completed State: bg-success, text-primary, with a <Check /> icon.
-Subtle edit (<Pencil />) and delete (<Trash2 />) icons next to the button, visible on hover. They should use text-secondary.
+Create a new card component SevenDayTrend. This can be placed next to the Habit Correlations card.
+Component Breakdown:
+Header: A title "7-Day Trend" and a trend indicator on the right.
+Trend Indicator:
+Display a percentage change (e.g., "+33.3%").
+If the trend is positive, color the text text-success and use an <ArrowUpRight /> icon.
+If negative, use a muted red and an <ArrowDownRight /> icon.
+Bar Chart: A simple horizontal bar chart showing the completion rate for each of the last seven days.
+Footer: Display "Avg Rate," "Best Day," and "Total" completions for the period.
+Directive 5 & 6: Enhance Existing Components
+Upgrade Streak Analytics Card:
+Current State: Simple placeholder text.
+Target State: Rebuild the card to have two main sections.
+Top Section: Two stat cards side-by-side for "Active Streaks" and "Avg Streak."
+Bottom Section: Two lists.
+"Current Streaks": Lists each habit and its current streak in days (e.g., "Data analytics - 1 days"). Use a colored tag for the day count.
+"Streak Progress": Lists each habit with a progress bar showing current_streak / longest_streak.
+Upgrade Weekly Patterns Card:
+Current State: Static list with 0% values.
+Target State:
+Highlighting: The bar corresponding to the day with the highest average completion rate should be filled with accent color (#3A7DFF) and labeled "BEST."
+Summary Cards: Replace the "Weekend vs Weekday" section with two dedicated summary cards below the chart:
+Best Day Card: Green background (bg-success/10), showing the best day (e.g., "Saturday") and its percentage.
+Needs Work Card: Red background (bg-red-500/10), showing the weakest day (e.g., "Sunday") and its percentage.

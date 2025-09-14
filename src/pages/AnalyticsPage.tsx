@@ -3,12 +3,12 @@ import { useHabitStore } from "../stores/habitStore";
 import PerformanceBreakdown from "../components/PerformanceBreakdown";
 import StreakAnalytics from "../components/StreakAnalytics";
 import PatternRecognition from "../components/PatternRecognition";
-import HabitManager from "../components/HabitManager";
 import GlobalSummaryHeader from "../components/GlobalSummaryHeader";
 import NavigationModule from "../components/NavigationModule";
 import QuickActionsModule from "../components/QuickActionsModule";
 import ConsistencyCard from "../components/ConsistencyCard";
 import MyHabitsModule from "../components/MyHabitsModule";
+import CompletionRatesVisual from "../components/CompletionRatesVisual";
 
 const AnalyticsPage: React.FC = () => {
   const { fetchAllData } = useHabitStore();
@@ -51,6 +51,7 @@ const AnalyticsPage: React.FC = () => {
         <div className="md:col-span-1 space-y-5">
           <QuickActionsModule />
           <ConsistencyCard />
+          <CompletionRatesVisual />
         </div>
 
         {/* Right column (main content) */}
@@ -61,7 +62,6 @@ const AnalyticsPage: React.FC = () => {
             <StreakAnalytics />
           </div>
           <PatternRecognition />
-          <HabitManager />
         </div>
       </div>
     </div>
