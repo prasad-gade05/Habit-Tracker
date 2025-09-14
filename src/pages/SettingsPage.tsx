@@ -99,7 +99,7 @@ const SettingsPage: React.FC = () => {
       {/* Improved Application Header */}
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-bold text-foreground tracking-tight">
-          Minimal Habit Tracker
+          Habit Tracker
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Build consistency, one day at a time
