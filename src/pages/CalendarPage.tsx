@@ -5,6 +5,8 @@ import SevenDayTrend from "../components/SevenDayTrend";
 import WeeklyPatterns from "../components/WeeklyPatterns";
 import NavigationModule from "../components/NavigationModule";
 import QuickActionsModule from "../components/QuickActionsModule";
+import MonthlyCompletionHeatmap from "../components/MonthlyCompletionHeatmap";
+import HabitStreakVisualization from "../components/HabitStreakVisualization";
 
 const CalendarPage: React.FC = () => {
   const { fetchAllData } = useHabitStore();
@@ -46,6 +48,11 @@ const CalendarPage: React.FC = () => {
         {/* Left Column (Larger) */}
         <div className="lg:col-span-2">
           <CalendarView />
+          {/* New visualizations placed below the calendar and side by side */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+            <MonthlyCompletionHeatmap />
+            <HabitStreakVisualization />
+          </div>
         </div>
 
         {/* Right Column (Smaller) */}
