@@ -21,10 +21,14 @@ const AnalyticsPage: React.FC = () => {
     <div className="container mx-auto px-4 py-6">
       {/* Improved Application Header */}
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Minimal Habit Tracker</h1>
-        <p className="text-sm text-muted-foreground mt-1">Build consistency, one day at a time</p>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">
+          Minimal Habit Tracker
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Build consistency, one day at a time
+        </p>
       </div>
-      
+
       {/* Minimal Navigation at the top */}
       <div className="mb-6">
         <NavigationModule />
@@ -34,9 +38,11 @@ const AnalyticsPage: React.FC = () => {
         <h1 className="text-xl font-bold text-foreground">
           Analytics & Insights
         </h1>
-        <p className="text-muted-foreground text-sm">Deep dive into your habit data</p>
+        <p className="text-muted-foreground text-sm">
+          Deep dive into your habit data
+        </p>
       </div>
-      
+
       <GlobalSummaryHeader />
 
       {/* Two-column layout */}
@@ -46,7 +52,7 @@ const AnalyticsPage: React.FC = () => {
           <QuickActionsModule />
           <ConsistencyCard />
         </div>
-        
+
         {/* Right column (main content) */}
         <div className="md:col-span-2 space-y-5">
           <MyHabitsModule />

@@ -1,6 +1,6 @@
-import React from 'react'
-import NavigationCard from './NavigationCard'
-import QuickActionsCard from './QuickActionsCard'
+import React from "react";
+import NavigationCard from "./NavigationCard";
+import QuickActionsCard from "./QuickActionsCard";
 
 const LeftSidebar: React.FC = () => {
   return (
@@ -8,7 +8,7 @@ const LeftSidebar: React.FC = () => {
       <NavigationCard />
       <QuickActionsCard />
     </div>
-  )
-}
+  );
+};
 
-export default LeftSidebar
+export default LeftSidebar;

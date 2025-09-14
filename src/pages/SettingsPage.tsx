@@ -99,22 +99,26 @@ const SettingsPage: React.FC = () => {
     <div className="container mx-auto px-4 py-6">
       {/* Improved Application Header */}
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">Minimal Habit Tracker</h1>
-        <p className="text-sm text-muted-foreground mt-1">Build consistency, one day at a time</p>
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">
+          Minimal Habit Tracker
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Build consistency, one day at a time
+        </p>
       </div>
-      
+
       {/* Minimal Navigation at the top */}
       <div className="mb-6">
         <NavigationModule />
       </div>
-      
+
       <div className="mb-5">
         <h1 className="text-xl font-bold text-foreground">Settings</h1>
         <p className="text-muted-foreground text-sm">
           Manage your data and preferences
         </p>
       </div>
-      
+
       {/* Quick Actions Module */}
       <div className="mb-5">
         <QuickActionsModule />
@@ -134,7 +138,12 @@ const SettingsPage: React.FC = () => {
                   Switch between light and dark mode
                 </p>
               </div>
-              <Button onClick={toggleTheme} variant="outline" size="sm" className="h-8 px-3 text-xs">
+              <Button
+                onClick={toggleTheme}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 text-xs"
+              >
                 {theme === "dark" ? (
                   <>
                     <Sun className="w-3 h-3 mr-1" />
@@ -159,12 +168,19 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground text-sm">Export Data</h3>
+                <h3 className="font-medium text-foreground text-sm">
+                  Export Data
+                </h3>
                 <p className="text-xs text-muted-foreground">
                   Download a backup of your habits and completion history
                 </p>
               </div>
-              <Button onClick={handleExport} variant="outline" size="sm" className="h-8 px-3 text-xs">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 text-xs"
+              >
                 <Download className="w-3 h-3 mr-1" />
                 Export
               </Button>
@@ -172,7 +188,9 @@ const SettingsPage: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground text-sm">Import Data</h3>
+                <h3 className="font-medium text-foreground text-sm">
+                  Import Data
+                </h3>
                 <p className="text-xs text-muted-foreground">
                   Restore your habits from a backup file
                 </p>
@@ -185,7 +203,12 @@ const SettingsPage: React.FC = () => {
                 id="import-file"
               />
               <label htmlFor="import-file">
-                <Button variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 text-xs"
+                  asChild
+                >
                   <span className="cursor-pointer">
                     <Upload className="w-3 h-3 mr-1" />
                     Import
@@ -204,14 +227,20 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground text-sm">Reset Database</h3>
+                <h3 className="font-medium text-foreground text-sm">
+                  Reset Database
+                </h3>
                 <p className="text-xs text-muted-foreground">
                   Completely reset the database to fix potential issues
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="h-8 px-3 text-xs">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="h-8 px-3 text-xs"
+                  >
                     <RotateCcw className="w-3 h-3 mr-1" />
                     Reset Database
                   </Button>
@@ -240,14 +269,20 @@ const SettingsPage: React.FC = () => {
 
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-foreground text-sm">Clear All Data</h3>
+                <h3 className="font-medium text-foreground text-sm">
+                  Clear All Data
+                </h3>
                 <p className="text-xs text-muted-foreground">
                   Permanently delete all habits and completion history
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="h-8 px-3 text-xs">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="h-8 px-3 text-xs"
+                  >
                     <Trash2 className="w-3 h-3 mr-1" />
                     Clear All
                   </Button>
@@ -309,7 +344,9 @@ const SettingsPage: React.FC = () => {
             <div className="text-xl font-bold text-foreground">
               {completions.length}
             </div>
-            <div className="text-xs text-muted-foreground">Total Completions</div>
+            <div className="text-xs text-muted-foreground">
+              Total Completions
+            </div>
           </div>
           <div className="p-4 bg-secondary/30 rounded-lg">
             <div className="text-xl font-bold text-foreground">
@@ -318,7 +355,9 @@ const SettingsPage: React.FC = () => {
                 : 0}
               %
             </div>
-            <div className="text-xs text-muted-foreground">Overall Completion Rate</div>
+            <div className="text-xs text-muted-foreground">
+              Overall Completion Rate
+            </div>
           </div>
         </div>
       </div>

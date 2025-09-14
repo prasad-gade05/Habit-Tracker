@@ -1,19 +1,19 @@
-import React from 'react'
-import { Star } from 'lucide-react'
-import { useHabitStore } from '../stores/habitStore'
+import React from "react";
+import { Star } from "lucide-react";
+import { useHabitStore } from "../stores/habitStore";
 
 const ConsistencyCard: React.FC = () => {
-  const { getCompletionRate } = useHabitStore()
-  const completionRate = getCompletionRate()
+  const { getCompletionRate } = useHabitStore();
+  const completionRate = getCompletionRate();
 
   // Determine consistency message based on completion rate
-  let message = "Keep going!"
+  let message = "Keep going!";
   if (completionRate >= 90) {
-    message = "Outstanding consistency!"
+    message = "Outstanding consistency!";
   } else if (completionRate >= 75) {
-    message = "Great progress!"
+    message = "Great progress!";
   } else if (completionRate >= 50) {
-    message = "Good consistency!"
+    message = "Good consistency!";
   }
 
   return (
@@ -24,9 +24,11 @@ const ConsistencyCard: React.FC = () => {
         </div>
       </div>
       <h3 className="text-base font-semibold text-foreground">{message}</h3>
-      <p className="text-xs text-muted-foreground mt-2">Consistency creates lasting change.</p>
+      <p className="text-xs text-muted-foreground mt-2">
+        Consistency creates lasting change.
+      </p>
     </div>
-  )
-}
+  );
+};
 
-export default ConsistencyCard
+export default ConsistencyCard;

@@ -1,11 +1,16 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import DashboardPage from './pages/DashboardPage'
-import AnalyticsPage from './pages/AnalyticsPage'
-import CalendarPage from './pages/CalendarPage'
-import SettingsPage from './pages/SettingsPage'
-import { ThemeProvider } from './components/theme-provider'
-import AppShell from './components/AppShell'
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import DashboardPage from "./pages/DashboardPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import CalendarPage from "./pages/CalendarPage";
+import SettingsPage from "./pages/SettingsPage";
+import { ThemeProvider } from "./components/theme-provider";
+import AppShell from "./components/AppShell";
 
 const App: React.FC = () => {
   return (
@@ -27,7 +32,7 @@ const App: React.FC = () => {
         </div>
       </Router>
     </ThemeProvider>
-  )
-}
+  );
+};
 
-export default App
+export default App;
