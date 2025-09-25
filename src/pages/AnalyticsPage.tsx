@@ -6,7 +6,7 @@ import PatternRecognition from "../components/PatternRecognition";
 import GlobalSummaryHeader from "../components/GlobalSummaryHeader";
 import NavigationModule from "../components/NavigationModule";
 import QuickActionsModule from "../components/QuickActionsModule";
-import MyHabitsModule from "../components/MyHabitsModule";
+// Removed MyHabitsModule import since it's no longer needed
 import CompletionRatesVisual from "../components/CompletionRatesVisual";
 import HabitCorrelations from "../components/HabitCorrelations";
 
@@ -56,7 +56,7 @@ const AnalyticsPage: React.FC = () => {
 
         {/* Right column (main content) */}
         <div className="md:col-span-2 space-y-5">
-          <MyHabitsModule />
+          {/* Removed MyHabitsModule */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <PerformanceBreakdown />
             <StreakAnalytics />
