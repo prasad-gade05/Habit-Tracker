@@ -5,7 +5,7 @@ import CalendarView from "../components/CalendarView";
 import SevenDayTrend from "../components/SevenDayTrend";
 import WeeklyPatterns from "../components/WeeklyPatterns";
 import NavigationModule from "../components/NavigationModule";
-import MinimalTodaysProgress from "../components/MinimalTodaysProgress";
+import TodaysHabits from "../components/TodaysHabits";
 import MonthlyCompletionHeatmap from "../components/MonthlyCompletionHeatmap";
 import HabitStreakVisualization from "../components/HabitStreakVisualization";
 import { parseISO } from "date-fns";
@@ -48,7 +48,7 @@ const CalendarPage: React.FC = () => {
 
       {/* Minimal Today's Progress Module */}
       <div className="mb-5">
-        <MinimalTodaysProgress />
+        <TodaysHabits />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

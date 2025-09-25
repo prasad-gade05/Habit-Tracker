@@ -5,7 +5,7 @@ import StreakAnalytics from "../components/StreakAnalytics";
 import PatternRecognition from "../components/PatternRecognition";
 import GlobalSummaryHeader from "../components/GlobalSummaryHeader";
 import NavigationModule from "../components/NavigationModule";
-import QuickActionsModule from "../components/QuickActionsModule";
+import TodaysHabits from "../components/TodaysHabits";
 // Removed MyHabitsModule import since it's no longer needed
 import CompletionRatesVisual from "../components/CompletionRatesVisual";
 import HabitCorrelations from "../components/HabitCorrelations";
@@ -65,7 +65,7 @@ const AnalyticsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
         {/* Left column (sidebar) */}
         <div className="md:col-span-1 space-y-5">
-          <QuickActionsModule />
+          <TodaysHabits />
           <CompletionRatesVisual />
           <HabitCorrelations 
             chartMode={chartMode}

@@ -8,10 +8,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isBefore, isToday } from "date-fns";
 import { getCompletionPercentageForDate } from "../utils/dateUtils";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Pause, Play } from "lucide-react";
 import HabitModal from "./HabitModal";
 import {
   AlertDialog,
@@ -36,8 +36,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { habits, completions, toggleCompletion, updateHabit, deleteHabit } =
+  const { habits, completions, toggleCompletion, updateHabit, deleteHabit, pauseHabit, unpauseHabit } =
     useHabitStore();
+
+  // Check if a paused habit is still paused
+  const isHabitPaused = (habit: Habit): boolean => {
+    if (!habit.isPaused || !habit.pausedUntil) return false;
+    const pauseEndDate = parseISO(habit.pausedUntil);
+    const todayDate = new Date();
+    return isBefore(todayDate, pauseEndDate) || isToday(pauseEndDate);
+  };
 
   // Get completions for the selected date
   const completionsForSelectedDate = selectedDate
@@ -93,6 +101,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
     deleteHabit(id);
   };
 
+  // Handle habit pause
+  const handlePauseHabit = (id: string) => {
+    const pauseEndDate = new Date();
+    pauseEndDate.setDate(pauseEndDate.getDate() + 7); // Pause for 7 days by default
+    const pausedUntil = format(pauseEndDate, "yyyy-MM-dd");
+    pauseHabit(id, pausedUntil);
+  };
+
+  // Handle habit unpause
+  const handleUnpauseHabit = (id: string) => {
+    unpauseHabit(id);
+  };
+
   // Start editing a habit
   const startEditing = (habit: Habit) => {
     setEditingHabit(habit);
@@ -135,6 +156,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                   ? isHabitActiveOnDate(habit, parseISO(selectedDate))
                   : false;
                 const habitCompleted = isHabitCompleted(habit.id);
+                const isPaused = isHabitPaused(habit);
                 
                 // Check if habit is deleted
                 const isHabitDeleted = habit.isDeleted;
@@ -144,7 +166,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                     key={habit.id}
                     className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors ${
                       isHabitDeleted ? "opacity-60 bg-muted" : ""
-                    }`}
+                    } ${isPaused ? "opacity-70 bg-blue-50 dark:bg-blue-900/20" : ""}`}
                     style={{
                       borderLeft: habit.color
                         ? `3px solid ${habit.color}`
@@ -155,18 +177,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                       id={habit.id}
                       checked={habitCompleted}
                       onCheckedChange={() => {
-                        // Only allow toggling for active habits that are not deleted
-                        if (isHabitActiveOnSelectedDate && selectedDate && !isHabitDeleted) {
+                        // Only allow toggling for active habits that are not deleted and not paused
+                        if (isHabitActiveOnSelectedDate && selectedDate && !isHabitDeleted && !isPaused) {
                           handleToggleCompletion(habit.id);
                         }
                       }}
-                      disabled={!isHabitActiveOnSelectedDate || !selectedDate || isHabitDeleted}
+                      disabled={!isHabitActiveOnSelectedDate || !selectedDate || isHabitDeleted || isPaused}
                     />
                     <div className="flex-1">
                       <label
                         htmlFor={habit.id}
                         className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
-                          !isHabitActiveOnSelectedDate || isHabitDeleted
+                          !isHabitActiveOnSelectedDate || isHabitDeleted || isPaused
                             ? "text-gray-500 dark:text-gray-400"
                             : ""
                         }`}
@@ -184,6 +206,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                               Deleted
                             </span>
                           )}
+                          {isPaused && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              Paused
+                            </span>
+                          )}
                         </div>
                         {habit.description && (
                           <div className="text-xs text-muted-foreground mt-1">
@@ -195,6 +222,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                             Not scheduled for this date
                           </div>
                         )}
+                        {isPaused && habit.pausedUntil && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Paused until: {format(parseISO(habit.pausedUntil), "MMM d, yyyy")}
+                          </div>
+                        )}
                         {isHabitDeleted && (
                           <div className="text-xs text-muted-foreground mt-1">
                             This habit has been deleted and cannot be edited
@@ -204,6 +236,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                     </div>
                     {!isHabitDeleted && (
                       <div className="flex space-x-1">
+                        {isPaused ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleUnpauseHabit(habit.id)}
+                          >
+                            <Play className="h-3 w-3" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handlePauseHabit(habit.id)}
+                          >
+                            <Pause className="h-3 w-3" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"

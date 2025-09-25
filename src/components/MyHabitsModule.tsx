@@ -4,9 +4,9 @@ import { Habit, isHabitActiveOnDate } from "../utils/dateUtils";
 import HabitRowItem from "./HabitRowItem";
 import HabitModal from "./HabitModal";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, Pause, Play } from "lucide-react";
 import { getToday } from "../utils/dateUtils";
-import { parseISO } from "date-fns";
+import { parseISO, format, isBefore, isToday } from "date-fns";
 import { calculateHabitStreak } from "../utils/streakUtils"; // Added import
 import {
   AlertDialog,
@@ -29,10 +29,20 @@ const MyHabitsModule: React.FC = () => {
     toggleCompletion,
     updateHabit,
     deleteHabit,
+    pauseHabit,
+    unpauseHabit,
   } = useHabitStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const today = getToday();
+
+  // Check if a paused habit is still paused
+  const isHabitPaused = (habit: Habit): boolean => {
+    if (!habit.isPaused || !habit.pausedUntil) return false;
+    const pauseEndDate = parseISO(habit.pausedUntil);
+    const todayDate = new Date();
+    return isBefore(todayDate, pauseEndDate) || isToday(pauseEndDate);
+  };
 
   const handleAddHabit = (
     name: string,
@@ -78,6 +88,17 @@ const MyHabitsModule: React.FC = () => {
     deleteHabit(habitId);
   };
 
+  const handlePauseHabit = (habitId: string) => {
+    const pauseEndDate = new Date();
+    pauseEndDate.setDate(pauseEndDate.getDate() + 7); // Pause for 7 days by default
+    const pausedUntil = format(pauseEndDate, "yyyy-MM-dd");
+    pauseHabit(habitId, pausedUntil);
+  };
+
+  const handleUnpauseHabit = (habitId: string) => {
+    unpauseHabit(habitId);
+  };
+
   // Calculate streak for a habit using the proper streak calculation
   const calculateStreak = (habit: Habit) => {
     // Use the proper streak calculation function
@@ -109,12 +130,15 @@ const MyHabitsModule: React.FC = () => {
               habit,
               parseISO(today)
             );
+            const isPaused = isHabitPaused(habit);
             const streak = calculateStreak(habit); // Updated to pass the habit object
 
             return (
               <div
                 key={habit.id}
-                className="bg-secondary/30 rounded-lg p-4 group transition-all duration-200 hover:bg-secondary/40"
+                className={`rounded-lg p-4 group transition-all duration-200 hover:bg-secondary/40 ${
+                  isPaused ? "bg-gray-100 dark:bg-gray-800 opacity-80" : "bg-secondary/30"
+                }`}
                 style={{
                   borderLeft: habit.color
                     ? `4px solid ${habit.color}`
@@ -148,6 +172,11 @@ const MyHabitsModule: React.FC = () => {
                             Temporary
                           </span>
                         )}
+                        {isPaused && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            Paused
+                          </span>
+                        )}
                       </div>
                       {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
                         <div className="text-xs text-muted-foreground mt-1">
@@ -166,6 +195,11 @@ const MyHabitsModule: React.FC = () => {
                                 ][day]
                             )
                             .join(", ")}
+                        </div>
+                      )}
+                      {isPaused && habit.pausedUntil && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Paused until: {format(parseISO(habit.pausedUntil), "MMM d, yyyy")}
                         </div>
                       )}
                       <div className="text-xs bg-accent/30 text-accent-foreground px-2 py-1 rounded mt-1 inline-block">
@@ -192,11 +226,11 @@ const MyHabitsModule: React.FC = () => {
                       }}
                       onClick={() => {
                         // Only allow toggling for active habits
-                        if (isHabitActiveToday) {
+                        if (isHabitActiveToday && !isPaused) {
                           handleToggleCompletion(habit.id);
                         }
                       }}
-                      disabled={!isHabitActiveToday}
+                      disabled={!isHabitActiveToday || isPaused}
                     >
                       {isCompleted ? (
                         <>
@@ -215,6 +249,25 @@ const MyHabitsModule: React.FC = () => {
                     Today's Progress
                   </div>
                   <div className="flex space-x-1">
+                    {isPaused ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
+                        onClick={() => handleUnpauseHabit(habit.id)}
+                      >
+                        <Play className="h-3 w-3" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
+                        onClick={() => handlePauseHabit(habit.id)}
+                      >
+                        <Pause className="h-3 w-3" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"

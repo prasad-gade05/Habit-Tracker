@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useHabitStore } from "../stores/habitStore";
 import GlobalSummaryHeader from "../components/GlobalSummaryHeader";
-import QuickActionsModule from "../components/QuickActionsModule";
+import TodaysHabits from "../components/TodaysHabits";
 import ContributionChart from "../components/ContributionChart";
 import NavigationModule from "../components/NavigationModule";
 // ConsistencyCard removed as requested
@@ -46,7 +46,7 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
         {/* Left column (sidebar) */}
         <div className="md:col-span-1 space-y-5">
-          <QuickActionsModule />
+          <TodaysHabits />
           {/* ConsistencyCard removed as requested */}
           <WeeklyOverviewChart />
         </div>

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useHabitStore } from "../stores/habitStore";
 import ColorPicker from "./ColorPicker";
 import { Checkbox } from "@/components/ui/checkbox";
-import { addDays, format } from "date-fns";
+import { addDays, format, parseISO, differenceInDays } from "date-fns";
 
 interface HabitModalProps {
   open: boolean;
@@ -90,7 +90,21 @@ const HabitModal: React.FC<HabitModalProps> = ({
 
       // Handle paused habit settings
       setIsPaused(habit?.isPaused || false);
-      setPauseDays(7); // Default to 7 days pause
+      // Calculate pause days from existing pausedUntil date
+      if (habit?.isPaused && habit?.pausedUntil) {
+        try {
+          const pauseEndDate = parseISO(habit.pausedUntil);
+          const today = new Date();
+          const diffDays = differenceInDays(pauseEndDate, today);
+          // Ensure we have a positive number of days
+          setPauseDays(Math.max(1, diffDays));
+        } catch (e) {
+          // If there's an error parsing the date, use default
+          setPauseDays(7);
+        }
+      } else {
+        setPauseDays(7); // Default to 7 days pause
+      }
     }
   }, [open, habit]);
 
@@ -139,21 +153,7 @@ const HabitModal: React.FC<HabitModalProps> = ({
       isPaused,
       pausedUntil
     );
-    resetForm();
     onOpenChange(false);
-  };
-
-  const resetForm = () => {
-    setName("");
-    setDescription("");
-    setColor("#3B82F6");
-    setError("");
-    setIsDaySpecific(false);
-    setSelectedDays([]);
-    setIsTemporary(false);
-    setDurationDays(7);
-    setIsPaused(false);
-    setPauseDays(7);
   };
 
   const toggleDay = (dayId: number) => {
@@ -180,7 +180,6 @@ const HabitModal: React.FC<HabitModalProps> = ({
     <Dialog
       open={open}
       onOpenChange={(isOpen) => {
-        if (!isOpen) resetForm();
         onOpenChange(isOpen);
       }}
     >
@@ -236,7 +235,7 @@ const HabitModal: React.FC<HabitModalProps> = ({
                   type="number"
                   min="1"
                   value={durationDays}
-                  onChange={(e) => setDurationDays(Number(e.target.value))}
+                  onChange={(e) => setDurationDays(Math.max(1, Number(e.target.value)))}
                   className="w-32"
                 />
               </div>
@@ -268,7 +267,7 @@ const HabitModal: React.FC<HabitModalProps> = ({
                   type="number"
                   min="1"
                   value={pauseDays}
-                  onChange={(e) => setPauseDays(Number(e.target.value))}
+                  onChange={(e) => setPauseDays(Math.max(1, Number(e.target.value)))}
                   className="w-32"
                 />
               </div>

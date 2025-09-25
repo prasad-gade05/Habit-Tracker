@@ -7,17 +7,11 @@ import {
   getStreakEmoji,
 } from "../utils/streakUtils";
 import { getToday } from "../utils/dateUtils";
-import { parseISO } from "date-fns";
+import { parseISO, format, isBefore, isToday } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Plus } from "lucide-react";
+import { Edit, Trash2, Pause, Play, Plus } from "lucide-react";
 import HabitModal from "./HabitModal";
 import {
   AlertDialog,
@@ -40,10 +34,20 @@ const TodaysHabits: React.FC = () => {
     deleteHabit,
     addHabit,
     isHabitCompletedOnDate,
+    pauseHabit,
+    unpauseHabit,
   } = useHabitStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const today = getToday();
+
+  // Check if a paused habit is still paused
+  const isHabitPaused = (habit: Habit): boolean => {
+    if (!habit.isPaused || !habit.pausedUntil) return false;
+    const pauseEndDate = parseISO(habit.pausedUntil);
+    const todayDate = new Date();
+    return isBefore(todayDate, pauseEndDate) || isToday(pauseEndDate);
+  };
 
   const handleAddHabit = useCallback(
     (
@@ -101,6 +105,23 @@ const TodaysHabits: React.FC = () => {
     [deleteHabit]
   );
 
+  const handlePauseHabit = useCallback(
+    (habitId: string) => {
+      const pauseEndDate = new Date();
+      pauseEndDate.setDate(pauseEndDate.getDate() + 7); // Pause for 7 days by default
+      const pausedUntil = format(pauseEndDate, "yyyy-MM-dd");
+      pauseHabit(habitId, pausedUntil);
+    },
+    [pauseHabit]
+  );
+
+  const handleUnpauseHabit = useCallback(
+    (habitId: string) => {
+      unpauseHabit(habitId);
+    },
+    [unpauseHabit]
+  );
+
   const habitsWithStreaks = useMemo(
     () =>
       habits.map((habit) => {
@@ -147,135 +168,151 @@ const TodaysHabits: React.FC = () => {
 
         {activeHabitsWithStreaks.length > 0 ? (
           <div className="space-y-3">
-            {activeHabitsWithStreaks.map((habit) => (
-              <div
-                key={habit.id}
-                className={`flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-secondary/30 ${
-                  habit.isCompletedToday && habit.isHabitActiveToday
-                    ? "opacity-60"
-                    : ""
-                } ${
-                  !habit.isHabitActiveToday
-                    ? "bg-gray-100 dark:bg-gray-800"
-                    : ""
-                }`}
-                style={{
-                  borderLeft: habit.color
-                    ? `4px solid ${habit.color}`
-                    : "4px solid #3B82F6",
-                }}
-              >
-                {/* Large Checkbox */}
-                <div className="mr-4">
-                  <Checkbox
-                    checked={habit.isCompletedToday}
-                    onCheckedChange={() => {
-                      // Only allow toggling for active habits
-                      if (habit.isHabitActiveToday) {
-                        handleToggleCompletion(habit.id);
-                      }
-                    }}
-                    className="w-5 h-5"
-                    aria-label={`Mark ${habit.name} as ${
-                      habit.isCompletedToday ? "incomplete" : "complete"
-                    }`}
-                    disabled={!habit.isHabitActiveToday}
-                  />
-                </div>
-
-                {/* Habit Name */}
-                <div className="flex-1 min-w-0 mr-2">
-                  <div
-                    className={`text-sm font-medium text-foreground ${
-                      habit.isCompletedToday && habit.isHabitActiveToday
-                        ? "line-through"
-                        : ""
-                    } ${
-                      !habit.isHabitActiveToday
-                        ? "text-gray-500 dark:text-gray-400"
-                        : ""
-                    }`}
-                  >
-                    {habit.name}
-                    {habit.isTemporary && (
-                      <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                        Temporary
-                      </span>
-                    )}
+            {activeHabitsWithStreaks.map((habit) => {
+              const isPaused = isHabitPaused(habit);
+              return (
+                <div
+                  key={habit.id}
+                  className={`flex items-center p-4 rounded-lg transition-all duration-200 hover:bg-secondary/30 border ${
+                    habit.isCompletedToday && habit.isHabitActiveToday
+                      ? "opacity-70 border-green-500/30"
+                      : "border-border"
+                  } ${
+                    !habit.isHabitActiveToday || isPaused
+                      ? "bg-gray-100 dark:bg-gray-800"
+                      : "bg-background"
+                  }`}
+                  style={{
+                    borderLeft: `4px solid ${habit.color || '#3B82F6'}`
+                  }}
+                >
+                  {/* Large Checkbox */}
+                  <div className="mr-4">
+                    <Checkbox
+                      checked={habit.isCompletedToday}
+                      onCheckedChange={() => {
+                        // Only allow toggling for active habits
+                        if (habit.isHabitActiveToday && !isPaused) {
+                          handleToggleCompletion(habit.id);
+                        }
+                      }}
+                      className="w-6 h-6"
+                      aria-label={`Mark ${habit.name} as ${
+                        habit.isCompletedToday ? "incomplete" : "complete"
+                      }`}
+                      disabled={!habit.isHabitActiveToday || isPaused}
+                    />
                   </div>
-                  {habit.description && (
-                    <div className="text-xs text-muted-foreground mt-1 truncate">
-                      {habit.description}
-                    </div>
-                  )}
-                  {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Active:{" "}
-                      {habit.daysOfWeek
-                        .map(
-                          (day) =>
-                            ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
-                              day
-                            ]
-                        )
-                        .join(", ")}
-                    </div>
-                  )}
-                  {!habit.isHabitActiveToday && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Not scheduled for today
-                    </div>
-                  )}
-                </div>
 
-                {/* Streak Badge */}
-                <div className="mr-2 hidden sm:block">
-                  <Badge
-                    variant="outline"
-                    className={`text-xs ${getStreakBadgeColor(
-                      habit.currentStreak
-                    )}`}
-                  >
-                    {getStreakEmoji(habit.currentStreak)} {habit.currentStreak}{" "}
-                    day{habit.currentStreak !== 1 ? "s" : ""}
-                  </Badge>
-                </div>
+                  {/* Habit Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={`text-sm font-medium text-foreground ${
+                            habit.isCompletedToday && habit.isHabitActiveToday
+                              ? "line-through"
+                              : ""
+                          } ${
+                            !habit.isHabitActiveToday || isPaused
+                              ? "text-gray-500 dark:text-gray-400"
+                              : ""
+                          }`}
+                        >
+                          {/* Habit color indicator */}
+                          <span 
+                            className="inline-block w-3 h-3 rounded-full mr-2 align-middle"
+                            style={{ backgroundColor: habit.color || '#3B82F6' }}
+                          ></span>
+                          {habit.name}
+                          {habit.isTemporary && (
+                            <span className="ml-2 text-xs bg-muted text-foreground px-2 py-1 rounded-full">
+                              Temporary
+                            </span>
+                          )}
+                          {isPaused && (
+                            <span className="ml-2 text-xs bg-muted text-foreground px-2 py-1 rounded-full">
+                              Paused
+                            </span>
+                          )}
+                        </div>
+                        {habit.description && (
+                          <div className="text-xs text-muted-foreground mt-1 truncate">
+                            {habit.description}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          Active:{" "}
+                          {habit.daysOfWeek
+                            .map(
+                              (day) =>
+                                ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+                                  day
+                                ]
+                            )
+                            .join(", ")}
+                        </div>
+                      )}
+                      {!habit.isHabitActiveToday && (
+                        <div className="text-xs text-muted-foreground">
+                          Not scheduled for today
+                        </div>
+                      )}
+                      {isPaused && habit.pausedUntil && (
+                        <div className="text-xs text-muted-foreground">
+                          Paused until: {format(parseISO(habit.pausedUntil), "MMM d, yyyy")}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Mobile Streak Badge */}
-                <div className="mr-2 sm:hidden">
-                  <Badge
-                    variant="outline"
-                    className={`text-xs ${getStreakBadgeColor(
-                      habit.currentStreak
-                    )}`}
-                  >
-                    {getStreakEmoji(habit.currentStreak)} {habit.currentStreak}
-                  </Badge>
-                </div>
-
-                {/* Dropdown Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                  {/* Action Buttons */}
+                  <div className="flex space-x-1 ml-2">
+                    {isPaused ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-blue-500/10"
+                        onClick={() => handleUnpauseHabit(habit.id)}
+                        aria-label={`Resume ${habit.name}`}
+                      >
+                        <Play className="h-4 w-4 text-foreground" />
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-blue-500/10"
+                        onClick={() => handlePauseHabit(habit.id)}
+                        aria-label={`Pause ${habit.name}`}
+                      >
+                        <Pause className="h-4 w-4 text-foreground" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0"
-                      aria-label={`More options for ${habit.name}`}
+                      className="h-8 w-8 p-0 hover:bg-yellow-500/10"
+                      onClick={() => handleEditHabit(habit)}
+                      aria-label={`Edit ${habit.name}`}
                     >
-                      <MoreHorizontal className="h-4 w-4" />
+                      <Edit className="h-4 w-4 text-foreground" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEditHabit(habit)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-red-500/10"
+                          aria-label={`Delete ${habit.name}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-foreground" />
+                        </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -295,16 +332,23 @@ const TodaysHabits: React.FC = () => {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className="text-center py-6 text-muted-foreground">
+          <div className="text-center py-8 text-muted-foreground">
             <p className="text-sm">
               No habits yet. Add your first habit to get started!
             </p>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="mt-4 bg-accent text-accent-foreground h-8 px-3 text-xs"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Add Your First Habit
+            </Button>
           </div>
         )}
       </div>
