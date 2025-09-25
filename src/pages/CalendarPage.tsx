@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useHabitStore } from "../stores/habitStore";
+import { useSearchParams } from "react-router-dom";
 import CalendarView from "../components/CalendarView";
 import SevenDayTrend from "../components/SevenDayTrend";
 import WeeklyPatterns from "../components/WeeklyPatterns";
@@ -7,13 +8,19 @@ import NavigationModule from "../components/NavigationModule";
 import QuickActionsModule from "../components/QuickActionsModule";
 import MonthlyCompletionHeatmap from "../components/MonthlyCompletionHeatmap";
 import HabitStreakVisualization from "../components/HabitStreakVisualization";
+import { parseISO } from "date-fns";
 
 const CalendarPage: React.FC = () => {
   const { fetchAllData } = useHabitStore();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchAllData();
   }, [fetchAllData]);
+
+  // Get the date parameter from URL and parse it
+  const dateParam = searchParams.get("date");
+  const initialDate = dateParam ? parseISO(dateParam) : new Date();
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -47,18 +54,19 @@ const CalendarPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left Column (Larger) */}
         <div className="lg:col-span-2">
-          <CalendarView />
+          {/* Pass the initialDate to CalendarView */}
+          <CalendarView initialDate={initialDate} />
           {/* New visualizations placed below the calendar and side by side */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
             <MonthlyCompletionHeatmap />
-            <HabitStreakVisualization />
+            <WeeklyPatterns />
           </div>
         </div>
 
         {/* Right Column (Smaller) */}
         <div className="lg:col-span-1 space-y-5">
           <SevenDayTrend />
-          <WeeklyPatterns />
+          <HabitStreakVisualization />
         </div>
       </div>
     </div>

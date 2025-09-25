@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useEffect } from "react";
 import { useHabitStore } from "../stores/habitStore";
+import { useNavigate } from "react-router-dom"; // Added import
 import {
   getLast365Days,
   getCompletionPercentageForDate,
@@ -14,6 +15,7 @@ import { format, parseISO, isSameDay } from "date-fns";
 
 const ContributionChart: React.FC = () => {
   const { habits, completions } = useHabitStore();
+  const navigate = useNavigate(); // Added navigate hook
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLDivElement>(null);
 
@@ -49,6 +51,12 @@ const ContributionChart: React.FC = () => {
     if (percentage < 67) return "bg-green-500/50";
     if (percentage < 100) return "bg-green-500/80";
     return "bg-green-500";
+  };
+
+  // Handle date click to navigate to calendar page
+  const handleDateClick = (date: string) => {
+    // Navigate to the calendar page with the selected date
+    navigate(`/calendar?date=${date}`);
   };
 
   // Group days into weeks (7 rows for days of week, 53 columns for weeks)
@@ -194,6 +202,7 @@ const ContributionChart: React.FC = () => {
                       return (
                         <Tooltip key={`${weekIndex}-${dayIndex}`}>
                           <TooltipTrigger asChild>
+                            {/* Added onClick handler and cursor pointer */}
                             <div
                               ref={day.isToday ? todayRef : null}
                               className={`w-3 h-3 rounded-sm transition-all duration-200 ${getColorClass(
@@ -202,7 +211,8 @@ const ContributionChart: React.FC = () => {
                                 day.isToday
                                   ? "border-2 border-white ring-2 ring-yellow-400"
                                   : ""
-                              }`}
+                              } cursor-pointer hover:opacity-80`}
+                              onClick={() => handleDateClick(day.date)}
                             />
                           </TooltipTrigger>
                           <TooltipContent>
@@ -219,6 +229,9 @@ const ContributionChart: React.FC = () => {
                               </div>
                               <div className="mt-1">
                                 {day.percentage}% completion
+                              </div>
+                              <div className="mt-1 text-muted-foreground">
+                                Click to view details
                               </div>
                             </div>
                           </TooltipContent>

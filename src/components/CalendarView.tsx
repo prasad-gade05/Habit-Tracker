@@ -26,8 +26,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import CustomCalendar from "./CustomCalendar";
 
-const CalendarView: React.FC = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+interface CalendarViewProps {
+  initialDate?: Date; // Added prop for initial date
+}
+
+const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
+  const [date, setDate] = useState<Date | undefined>(initialDate || new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
