@@ -1,10 +1,10 @@
-# Minimal Habit Tracker
+# Habit Tracker
 
 A privacy-first, client-side habit tracking application built with modern web technologies. All data is stored locally in your browser using IndexedDB.
 
 **[Live Demo](https://prasad-gade05.github.io/Habit-Tracker/)**
 
-## Features
+## ✨ Features
 
 - **Privacy First**: All your data is stored locally in your browser. Nothing is ever sent to a server.
 - **Minimal & Clean Design**: A distraction-free interface that helps you focus on building your habits.
@@ -25,7 +25,7 @@ A privacy-first, client-side habit tracking application built with modern web te
   - Delete all your data with a single click.
 - **Dark & Light Theme**: Switch between dark and light themes to match your preference.
 
-## Tech Stack
+## 🚀 Tech Stack
 
 - **Framework**: [React 19](https://react.dev/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
@@ -38,7 +38,7 @@ A privacy-first, client-side habit tracking application built with modern web te
 - **Date & Time**: [date-fns](https://date-fns.org/)
 - **Icons**: [Lucide React](https://lucide.dev/guide/packages/lucide-react)
 
-## Getting Started
+## 🏁 Getting Started
 
 ### Prerequisites
 
@@ -48,54 +48,34 @@ A privacy-first, client-side habit tracking application built with modern web te
 ### Installation
 
 1.  **Clone the repository:**
-
     ```bash
     git clone https://github.com/prasad-gade05/Habit-Tracker.git
     ```
-
 2.  **Navigate to the project directory:**
-
     ```bash
     cd Habit-Tracker
     ```
-
 3.  **Install the dependencies:**
-
     ```bash
     pnpm install
     ```
 
-### Running the Development Server
+### Available Scripts
 
-To start the development server, run the following command:
+- **Run the development server:**
+  ```bash
+  pnpm dev
+  ```
+- **Build the application for production:**
+  ```bash
+  pnpm build
+  ```
+- **Deploy to GitHub Pages:**
+  ```bash
+  pnpm deploy
+  ```
 
-```bash
-pnpm dev
-```
-
-This will start the application in development mode and open it in your default browser at `http://localhost:5173`.
-
-### Building for Production
-
-To build the application for production, run the following command:
-
-```bash
-pnpm build
-```
-
-This will create a `dist` folder with the optimized production build.
-
-## Deployment
-
-This project is deployed to GitHub Pages. The `deploy` script in `package.json` handles the deployment process. To deploy the application, run the following command:
-
-```bash
-pnpm deploy
-```
-
-This will build the application and deploy the `dist` folder to the `gh-pages` branch of your repository.
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
@@ -108,7 +88,7 @@ src/
 └── styles/         # Global styles
 ```
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
 
@@ -118,6 +98,6 @@ Contributions are welcome! If you have any ideas, suggestions, or bug reports, p
 4.  Push to the branch (`git push origin feature/AmazingFeature`).
 5.  Open a pull request.
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
