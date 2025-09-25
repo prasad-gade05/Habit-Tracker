@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useHabitStore } from "../stores/habitStore";
 import { Link, Activity, Filter } from "lucide-react";
 import { calculateCorrelation } from "../utils/correlationUtils";
@@ -12,45 +12,68 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import CorrelationMatrix from "./CorrelationMatrix";
-import CorrelationRadarChart from "./CorrelationRadarChart";
 
-const HabitCorrelations: React.FC = () => {
+interface HabitCorrelationsProps {
+  chartMode?: "top" | "specific";
+  selectedHabitId?: string;
+  numHabitsToShow?: number;
+  onFilterChange?: (mode: "top" | "specific", habitId: string, numHabits: number) => void;
+}
+
+const HabitCorrelations: React.FC<HabitCorrelationsProps> = ({
+  chartMode: externalChartMode,
+  selectedHabitId: externalSelectedHabitId,
+  numHabitsToShow: externalNumHabitsToShow,
+  onFilterChange
+}) => {
   const { habits, completions } = useHabitStore();
-  const [selectedHabitId, setSelectedHabitId] = useState<string>("all");
-  const [chartMode, setChartMode] = useState<"top" | "specific">("top");
-  const [numHabitsToShow, setNumHabitsToShow] = useState<number>(5);
+  
+  // Use external state if provided, otherwise use internal state
+  const isControlled = externalChartMode !== undefined;
+  const [internalChartMode, setInternalChartMode] = React.useState<"top" | "specific">("top");
+  const [internalSelectedHabitId, setInternalSelectedHabitId] = React.useState<string>("all");
+  const [internalNumHabitsToShow, setInternalNumHabitsToShow] = React.useState<number>(5);
+  
+  const chartMode = isControlled ? externalChartMode : internalChartMode;
+  const selectedHabitId = isControlled ? externalSelectedHabitId : internalSelectedHabitId;
+  const numHabitsToShow = isControlled ? externalNumHabitsToShow : internalNumHabitsToShow;
+  
+  const setChartMode = (mode: "top" | "specific") => {
+    if (isControlled && onFilterChange) {
+      onFilterChange(mode, selectedHabitId, numHabitsToShow);
+    } else {
+      setInternalChartMode(mode);
+    }
+  };
+  
+  const setSelectedHabitId = (habitId: string) => {
+    if (isControlled && onFilterChange) {
+      onFilterChange(chartMode, habitId, numHabitsToShow);
+    } else {
+      setInternalSelectedHabitId(habitId);
+    }
+  };
+  
+  const setNumHabitsToShow = (numHabits: number) => {
+    if (isControlled && onFilterChange) {
+      onFilterChange(chartMode, selectedHabitId, numHabits);
+    } else {
+      setInternalNumHabitsToShow(numHabits);
+    }
+  };
 
   // Check if we have sufficient data
   const hasSufficientData = useMemo(() => {
     return habits.length >= 2 && completions.length > 0;
   }, [habits.length, completions.length]);
 
-  // Get color class based on correlation value
-  const getCorrelationColor = (value: number) => {
-    // Convert correlation value (-1 to 1) to a color
-    if (value === 1) return "bg-blue-500"; // Strong positive correlation
-    if (value >= 0.7) return "bg-blue-400";
-    if (value >= 0.5) return "bg-blue-300";
-    if (value >= 0.3) return "bg-blue-200";
-    if (value >= 0.1) return "bg-blue-100";
-    if (value > -0.1) return "bg-gray-100"; // Near zero correlation
-    if (value > -0.3) return "bg-red-100";
-    if (value > -0.5) return "bg-red-200";
-    if (value > -0.7) return "bg-red-300";
-    if (value > -1) return "bg-red-400";
-    return "bg-red-500"; // Strong negative correlation
-  };
-
   // Calculate correlations between habits
-  const { correlationMatrix, habitList, topCorrelations, radarData } =
+  const { habitList, topCorrelations } =
     useMemo(() => {
       if (!hasSufficientData)
         return {
-          correlationMatrix: [],
           habitList: [],
           topCorrelations: [],
-          radarData: [],
         };
 
       // Get last 30 days
@@ -85,7 +108,6 @@ const HabitCorrelations: React.FC = () => {
       });
 
       // Create correlation matrix
-      const matrix: number[][] = [];
       const habitList = [...habits];
 
       // For top correlations
@@ -96,64 +118,55 @@ const HabitCorrelations: React.FC = () => {
       }[] = [];
 
       for (let i = 0; i < habitList.length; i++) {
-        const row: number[] = [];
-        for (let j = 0; j < habitList.length; j++) {
-          if (i === j) {
-            row.push(1); // Correlation with itself is 1
-          } else {
-            const habit1 = habitList[i];
-            const habit2 = habitList[j];
+        for (let j = i + 1; j < habitList.length; j++) {
+          const habit1 = habitList[i];
+          const habit2 = habitList[j];
 
-            let completionArr1 = habitCompletionMatrix[habit1.id];
-            let completionArr2 = habitCompletionMatrix[habit2.id];
+          let completionArr1 = habitCompletionMatrix[habit1.id];
+          let completionArr2 = habitCompletionMatrix[habit2.id];
 
-            // Filter out inactive days (-1 values) and only consider days when both habits are active
-            const filteredData = dates
-              .map((_, index) => ({
-                habit1Active: completionArr1[index] !== -1,
-                habit2Active: completionArr2[index] !== -1,
-                habit1Completed: completionArr1[index] === 1,
-                habit2Completed: completionArr2[index] === 1,
-              }))
-              .filter((data) => data.habit1Active && data.habit2Active);
+          // Filter out inactive days (-1 values) and only consider days when both habits are active
+          const filteredData = dates
+            .map((_, index) => ({
+              habit1Active: completionArr1[index] !== -1,
+              habit2Active: completionArr2[index] !== -1,
+              habit1Completed: completionArr1[index] === 1,
+              habit2Completed: completionArr2[index] === 1,
+            }))
+            .filter((data) => data.habit1Active && data.habit2Active);
 
-            // Create new arrays with only the data for active days
-            const filteredArr1 = filteredData.map((data) =>
-              data.habit1Completed ? 1 : 0
+          // Create new arrays with only the data for active days
+          const filteredArr1 = filteredData.map((data) =>
+            data.habit1Completed ? 1 : 0
+          );
+          const filteredArr2 = filteredData.map((data) =>
+            data.habit2Completed ? 1 : 0
+          );
+
+          if (filteredArr1.length > 0 && filteredArr2.length > 0) {
+            const correlation = calculateCorrelation(
+              filteredArr1,
+              filteredArr2
             );
-            const filteredArr2 = filteredData.map((data) =>
-              data.habit2Completed ? 1 : 0
-            );
 
-            if (filteredArr1.length > 0 && filteredArr2.length > 0) {
-              const correlation = calculateCorrelation(
-                filteredArr1,
-                filteredArr2
-              );
-              row.push(correlation);
-
-              // Store for top correlations list (only store each pair once)
-              if (i < j && Math.abs(correlation) > 0.1) {
-                correlationData.push({
-                  habit1: {
-                    id: habit1.id,
-                    name: habit1.name,
-                    color: habit1.color,
-                  },
-                  habit2: {
-                    id: habit2.id,
-                    name: habit2.name,
-                    color: habit2.color,
-                  },
-                  correlation,
-                });
-              }
-            } else {
-              row.push(0);
+            // Store for top correlations list (only store each pair once)
+            if (Math.abs(correlation) > 0.1) {
+              correlationData.push({
+                habit1: {
+                  id: habit1.id,
+                  name: habit1.name,
+                  color: habit1.color,
+                },
+                habit2: {
+                  id: habit2.id,
+                  name: habit2.name,
+                  color: habit2.color,
+                },
+                correlation,
+              });
             }
           }
         }
-        matrix.push(row);
       }
 
       // Sort top correlations by absolute value
@@ -161,69 +174,27 @@ const HabitCorrelations: React.FC = () => {
         .sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation))
         .slice(0, 10);
 
-      // Prepare data for radar chart based on selected mode
-      let radarData = [];
-      
-      if (chartMode === "top") {
-        // For top correlations mode, show the top N most correlated habits
-        const topHabits = [...new Set([
-          ...topCorrelations.slice(0, numHabitsToShow).flatMap(c => [c.habit1.id, c.habit2.id])
-        ])].slice(0, numHabitsToShow);
-        
-        const filteredHabitList = habitList.filter(habit => topHabits.includes(habit.id));
-        
-        radarData = filteredHabitList.map((habit) => {
-          const dataPoint: any = { habit: habit.name };
-          filteredHabitList.forEach((otherHabit, index) => {
-            const correlationValue =
-              matrix[habitList.findIndex((h) => h.id === habit.id)][habitList.findIndex((h) => h.id === otherHabit.id)];
-            // Convert correlation to a value between 0 and 100 for the radar chart
-            dataPoint[otherHabit.name] = Math.round((correlationValue + 1) * 50);
-          });
-          return dataPoint;
-        });
-      } else {
-        // For specific habit mode, show correlations of selected habit with others
-        if (selectedHabitId !== "all") {
-          const selectedHabit = habitList.find(h => h.id === selectedHabitId);
-          if (selectedHabit) {
-            const otherHabits = habitList
-              .filter(habit => habit.id !== selectedHabitId)
-              .slice(0, numHabitsToShow);
-            
-            radarData = otherHabits.map((habit) => {
-              const dataPoint: any = { habit: habit.name };
-              const correlationValue =
-                matrix[habitList.findIndex((h) => h.id === selectedHabitId)][habitList.findIndex((h) => h.id === habit.id)];
-              // Convert correlation to a value between 0 and 100 for the radar chart
-              dataPoint[selectedHabit.name] = Math.round((correlationValue + 1) * 50);
-              return dataPoint;
-            });
-          }
-        } else {
-          // Default case - show all habits (limited to prevent clutter)
-          const limitedHabitList = habitList.slice(0, Math.min(numHabitsToShow, habitList.length));
-          
-          radarData = limitedHabitList.map((habit) => {
-            const dataPoint: any = { habit: habit.name };
-            limitedHabitList.forEach((otherHabit, index) => {
-              const correlationValue =
-                matrix[habitList.findIndex((h) => h.id === habit.id)][habitList.findIndex((h) => h.id === otherHabit.id)];
-              // Convert correlation to a value between 0 and 100 for the radar chart
-              dataPoint[otherHabit.name] = Math.round((correlationValue + 1) * 50);
-            });
-            return dataPoint;
-          });
-        }
-      }
-
       return {
-        correlationMatrix: matrix,
         habitList,
         topCorrelations,
-        radarData,
       };
-    }, [habits, completions, hasSufficientData, chartMode, selectedHabitId, numHabitsToShow]);
+    }, [habits, completions, hasSufficientData]);
+
+  // Get color class based on correlation value
+  const getCorrelationColor = (value: number) => {
+    // Convert correlation value (-1 to 1) to a color
+    if (value === 1) return "bg-blue-500"; // Strong positive correlation
+    if (value >= 0.7) return "bg-blue-400";
+    if (value >= 0.5) return "bg-blue-300";
+    if (value >= 0.3) return "bg-blue-200";
+    if (value >= 0.1) return "bg-blue-100";
+    if (value > -0.1) return "bg-gray-100"; // Near zero correlation
+    if (value > -0.3) return "bg-red-100";
+    if (value > -0.5) return "bg-red-200";
+    if (value > -0.7) return "bg-red-300";
+    if (value > -1) return "bg-red-400";
+    return "bg-red-500"; // Strong negative correlation
+  };
 
   if (!hasSufficientData) {
     return (
@@ -319,7 +290,7 @@ const HabitCorrelations: React.FC = () => {
       </div>
 
       {/* Top Correlations List */}
-      <div className="mb-8">
+      <div>
         <h3 className="font-medium text-foreground mb-3">
           Strongest Correlations
         </h3>
@@ -375,8 +346,6 @@ const HabitCorrelations: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Correlation Matrix and Radar Chart will be rendered in AnalyticsPage directly below PatternRecognition */}
     </div>
   );
 };
