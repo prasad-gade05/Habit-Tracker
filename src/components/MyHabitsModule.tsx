@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2, Check } from "lucide-react";
 import { getToday } from "../utils/dateUtils";
 import { parseISO } from "date-fns";
+import { calculateHabitStreak } from "../utils/streakUtils"; // Added import
 
 const MyHabitsModule: React.FC = () => {
   const {
     habits,
+    completions, // Added completions to the destructuring
     addHabit,
     isHabitCompletedOnDate,
     toggleCompletion,
@@ -55,13 +57,10 @@ const MyHabitsModule: React.FC = () => {
     deleteHabit(habitId);
   };
 
-  // Calculate streak for a habit
-  const calculateStreak = (habitId: string) => {
-    // For now, we'll implement a simple streak calculation
-    // This would ideally be replaced with a more sophisticated algorithm
-    const completions = useHabitStore.getState().completions;
-    const habitCompletions = completions.filter((c) => c.habitId === habitId);
-    return habitCompletions.length;
+  // Calculate streak for a habit using the proper streak calculation
+  const calculateStreak = (habit: Habit) => {
+    // Use the proper streak calculation function
+    return calculateHabitStreak(habit, completions);
   };
 
   return (
@@ -86,7 +85,7 @@ const MyHabitsModule: React.FC = () => {
               habit,
               parseISO(today)
             );
-            const streak = calculateStreak(habit.id);
+            const streak = calculateStreak(habit); // Updated to pass the habit object
 
             return (
               <div
