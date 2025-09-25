@@ -268,6 +268,11 @@ const TodaysHabits: React.FC = () => {
                           Paused until: {format(parseISO(habit.pausedUntil), "MMM d, yyyy")}
                         </div>
                       )}
+                      {habit.isTemporary && habit.endDate && (
+                        <div className="text-xs text-muted-foreground">
+                          Expires: {format(parseISO(habit.endDate), "MMM d, yyyy")}
+                        </div>
+                      )}
                     </div>
                   </div>
 

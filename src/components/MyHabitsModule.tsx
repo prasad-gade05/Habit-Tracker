@@ -202,6 +202,11 @@ const MyHabitsModule: React.FC = () => {
                           Paused until: {format(parseISO(habit.pausedUntil), "MMM d, yyyy")}
                         </div>
                       )}
+                      {habit.isTemporary && habit.endDate && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Expires: {format(parseISO(habit.endDate), "MMM d, yyyy")}
+                        </div>
+                      )}
                       <div className="text-xs bg-accent/30 text-accent-foreground px-2 py-1 rounded mt-1 inline-block">
                         {streak} day{streak !== 1 ? "s" : ""} streak
                       </div>
