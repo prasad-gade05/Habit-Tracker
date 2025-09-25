@@ -10,6 +10,7 @@ import QuickActionsModule from "../components/QuickActionsModule";
 import CompletionRatesVisual from "../components/CompletionRatesVisual";
 import HabitCorrelations from "../components/HabitCorrelations";
 import CorrelationVisualizations from "../components/CorrelationVisualizations";
+import DeletedHabitsManager from "../components/DeletedHabitsManager";
 
 const AnalyticsPage: React.FC = () => {
   const { fetchAllData } = useHabitStore();
@@ -90,6 +91,11 @@ const AnalyticsPage: React.FC = () => {
             numHabitsToShow={numHabitsToShow}
           />
         </div>
+      </div>
+
+      {/* Deleted Habits Management Section */}
+      <div className="mt-8">
+        <DeletedHabitsManager />
       </div>
     </div>
   );

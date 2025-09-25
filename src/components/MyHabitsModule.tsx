@@ -8,6 +8,17 @@ import { Plus, Pencil, Trash2, Check } from "lucide-react";
 import { getToday } from "../utils/dateUtils";
 import { parseISO } from "date-fns";
 import { calculateHabitStreak } from "../utils/streakUtils"; // Added import
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const MyHabitsModule: React.FC = () => {
   const {
@@ -27,19 +38,29 @@ const MyHabitsModule: React.FC = () => {
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    daysOfWeek?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ) => {
-    addHabit(name, description, color, daysOfWeek);
+    addHabit(name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil);
   };
 
   const handleUpdateHabit = (
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    daysOfWeek?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description, color, daysOfWeek);
+      updateHabit(editingHabit.id, name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil);
       setEditingHabit(null);
     }
   };
@@ -63,6 +84,9 @@ const MyHabitsModule: React.FC = () => {
     return calculateHabitStreak(habit, completions);
   };
 
+  // Filter out deleted habits for display
+  const activeHabits = habits.filter(habit => !habit.isDeleted);
+
   return (
     <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
       <div className="flex justify-between items-center mb-5">
@@ -76,9 +100,9 @@ const MyHabitsModule: React.FC = () => {
         </Button>
       </div>
 
-      {habits.length > 0 ? (
+      {activeHabits.length > 0 ? (
         <div className="space-y-3">
-          {habits.map((habit: Habit) => {
+          {activeHabits.map((habit: Habit) => {
             const isCompleted = isHabitCompletedOnDate(habit.id, today);
             // Check if habit is active today
             const isHabitActiveToday = isHabitActiveOnDate(
@@ -119,6 +143,11 @@ const MyHabitsModule: React.FC = () => {
                     <div>
                       <div className="font-medium text-foreground text-sm">
                         {habit.name}
+                        {habit.isTemporary && (
+                          <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                            Temporary
+                          </span>
+                        )}
                       </div>
                       {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
                         <div className="text-xs text-muted-foreground mt-1">
@@ -194,14 +223,34 @@ const MyHabitsModule: React.FC = () => {
                     >
                       <Pencil className="h-3 w-3" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
-                      onClick={() => handleDeleteHabit(habit.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will mark "{habit.name}" as deleted. You can restore it later from the Analytics page.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteHabit(habit.id)}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Confirm Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </div>

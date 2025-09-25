@@ -5,6 +5,16 @@ interface HabitRecord extends Habit {
   id: string;
   description?: string;
   daysOfWeek?: number[]; // Array of day numbers (0-6) where 0 is Sunday
+  // New fields for temporary habits
+  isTemporary?: boolean;
+  durationDays?: number;
+  endDate?: string;
+  // New fields for soft-deleted habits
+  isDeleted?: boolean;
+  deletedAt?: string;
+  // New fields for paused habits
+  isPaused?: boolean;
+  pausedUntil?: string;
 }
 
 interface CompletionRecord extends Completion {
@@ -23,9 +33,9 @@ class HabitTrackerDB extends Dexie {
       console.log("Database version change detected", event);
     });
 
-    // Updated schema to version 3 to include daysOfWeek field
-    this.version(3).stores({
-      habits: "id, name, description, color, createdAt, daysOfWeek",
+    // Updated schema to version 4 to include new fields for temporary, deleted, and paused habits
+    this.version(4).stores({
+      habits: "id, name, description, color, createdAt, daysOfWeek, isTemporary, durationDays, endDate, isDeleted, deletedAt, isPaused, pausedUntil",
       completions: "id, habitId, date, [habitId+date]", // Composite index for faster queries
     });
 
@@ -41,7 +51,12 @@ class HabitTrackerDB extends Dexie {
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    daysOfWeek?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ): Promise<string> {
     try {
       const id = await this.habits.add({
@@ -52,6 +67,12 @@ class HabitTrackerDB extends Dexie {
         daysOfWeek:
           daysOfWeek && daysOfWeek.length > 0 ? daysOfWeek : undefined, // Only store daysOfWeek if specified
         createdAt: new Date().toISOString(),
+        isTemporary,
+        durationDays,
+        endDate,
+        isDeleted: false, // New habits are not deleted by default
+        isPaused,
+        pausedUntil,
       });
       return id as string;
     } catch (error) {
@@ -64,26 +85,72 @@ class HabitTrackerDB extends Dexie {
     return await this.habits.toArray();
   }
 
+  async getAllActiveHabits(): Promise<HabitRecord[]> {
+    return await this.habits.filter(habit => !habit.isDeleted).toArray();
+  }
+
+  async getAllDeletedHabits(): Promise<HabitRecord[]> {
+    return await this.habits.filter(habit => habit.isDeleted).toArray();
+  }
+
   async updateHabit(
     id: string,
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    daysOfWeek?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ): Promise<void> {
     await this.habits.update(id, {
       name,
       description,
       color,
       daysOfWeek: daysOfWeek && daysOfWeek.length > 0 ? daysOfWeek : undefined,
+      isTemporary,
+      durationDays,
+      endDate,
+      isPaused,
+      pausedUntil,
     });
   }
 
-  async deleteHabit(id: string): Promise<void> {
+  async softDeleteHabit(id: string): Promise<void> {
+    await this.habits.update(id, {
+      isDeleted: true,
+      deletedAt: new Date().toISOString(),
+    });
+  }
+
+  async restoreHabit(id: string): Promise<void> {
+    await this.habits.update(id, {
+      isDeleted: false,
+      deletedAt: undefined,
+    });
+  }
+
+  async deleteHabitPermanently(id: string): Promise<void> {
     // Delete the habit and all its completions
     await this.transaction("rw", this.habits, this.completions, async () => {
       await this.habits.delete(id);
       await this.completions.where("habitId").equals(id).delete();
+    });
+  }
+
+  async pauseHabit(id: string, pausedUntil: string): Promise<void> {
+    await this.habits.update(id, {
+      isPaused: true,
+      pausedUntil,
+    });
+  }
+
+  async unpauseHabit(id: string): Promise<void> {
+    await this.habits.update(id, {
+      isPaused: false,
+      pausedUntil: undefined,
     });
   }
 

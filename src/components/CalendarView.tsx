@@ -74,10 +74,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
     name: string,
     description?: string,
     color?: string,
-    days?: number[]
+    days?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ) => {
     if (editingHabit) {
-      updateHabit(editingHabit.id, name, description, color, days);
+      updateHabit(editingHabit.id, name, description, color, days, isTemporary, durationDays, endDate, isPaused, pausedUntil);
       setIsEditModalOpen(false);
       setEditingHabit(null);
     }
@@ -130,11 +135,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                   ? isHabitActiveOnDate(habit, parseISO(selectedDate))
                   : false;
                 const habitCompleted = isHabitCompleted(habit.id);
+                
+                // Check if habit is deleted
+                const isHabitDeleted = habit.isDeleted;
 
                 return (
                   <div
                     key={habit.id}
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors"
+                    className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors ${
+                      isHabitDeleted ? "opacity-60 bg-muted" : ""
+                    }`}
                     style={{
                       borderLeft: habit.color
                         ? `3px solid ${habit.color}`
@@ -145,18 +155,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                       id={habit.id}
                       checked={habitCompleted}
                       onCheckedChange={() => {
-                        // Only allow toggling for active habits
-                        if (isHabitActiveOnSelectedDate && selectedDate) {
+                        // Only allow toggling for active habits that are not deleted
+                        if (isHabitActiveOnSelectedDate && selectedDate && !isHabitDeleted) {
                           handleToggleCompletion(habit.id);
                         }
                       }}
-                      disabled={!isHabitActiveOnSelectedDate || !selectedDate}
+                      disabled={!isHabitActiveOnSelectedDate || !selectedDate || isHabitDeleted}
                     />
                     <div className="flex-1">
                       <label
                         htmlFor={habit.id}
                         className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
-                          !isHabitActiveOnSelectedDate
+                          !isHabitActiveOnSelectedDate || isHabitDeleted
                             ? "text-gray-500 dark:text-gray-400"
                             : ""
                         }`}
@@ -169,59 +179,69 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                             }}
                           />
                           <span>{habit.name}</span>
+                          {isHabitDeleted && (
+                            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                              Deleted
+                            </span>
+                          )}
                         </div>
                         {habit.description && (
                           <div className="text-xs text-muted-foreground mt-1">
                             {habit.description}
                           </div>
                         )}
-                        {!isHabitActiveOnSelectedDate && selectedDate && (
+                        {!isHabitActiveOnSelectedDate && selectedDate && !isHabitDeleted && (
                           <div className="text-xs text-muted-foreground mt-1">
                             Not scheduled for this date
                           </div>
                         )}
+                        {isHabitDeleted && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            This habit has been deleted and cannot be edited
+                          </div>
+                        )}
                       </label>
                     </div>
-                    <div className="flex space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => startEditing(habit)}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This will permanently delete "{habit.name}" and
-                              all of its tracked history. This action cannot be
-                              undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteHabit(habit.id)}
-                              className="bg-destructive hover:bg-destructive/90"
+                    {!isHabitDeleted && (
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => startEditing(habit)}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
                             >
-                              Confirm Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will mark "{habit.name}" as deleted. You can restore it later from the Analytics page.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteHabit(habit.id)}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                Confirm Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -234,7 +254,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
 
           <div className="mt-3 text-xs text-muted-foreground text-center">
             Toggle habits to mark them as completed or not completed on this
-            date
+            date. Deleted habits cannot be edited.
           </div>
         </DialogContent>
       </Dialog>

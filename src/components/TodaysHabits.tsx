@@ -50,9 +50,14 @@ const TodaysHabits: React.FC = () => {
       name: string,
       description?: string,
       color?: string,
-      daysOfWeek?: number[]
+      daysOfWeek?: number[],
+      isTemporary?: boolean,
+      durationDays?: number,
+      endDate?: string,
+      isPaused?: boolean,
+      pausedUntil?: string
     ) => {
-      addHabit(name, description, color, daysOfWeek);
+      addHabit(name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil);
     },
     [addHabit]
   );
@@ -62,10 +67,15 @@ const TodaysHabits: React.FC = () => {
       name: string,
       description?: string,
       color?: string,
-      daysOfWeek?: number[]
+      daysOfWeek?: number[],
+      isTemporary?: boolean,
+      durationDays?: number,
+      endDate?: string,
+      isPaused?: boolean,
+      pausedUntil?: string
     ) => {
       if (editingHabit) {
-        updateHabit(editingHabit.id, name, description, color, daysOfWeek);
+        updateHabit(editingHabit.id, name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil);
         setEditingHabit(null);
       }
     },
@@ -116,6 +126,9 @@ const TodaysHabits: React.FC = () => {
     [habits, completions, today, isHabitCompletedOnDate]
   );
 
+  // Filter out deleted habits for display
+  const activeHabitsWithStreaks = habitsWithStreaks.filter(habit => !habit.isDeleted);
+
   return (
     <>
       <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
@@ -132,9 +145,9 @@ const TodaysHabits: React.FC = () => {
           </Button>
         </div>
 
-        {habitsWithStreaks.length > 0 ? (
+        {activeHabitsWithStreaks.length > 0 ? (
           <div className="space-y-3">
-            {habitsWithStreaks.map((habit) => (
+            {activeHabitsWithStreaks.map((habit) => (
               <div
                 key={habit.id}
                 className={`flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-secondary/30 ${
@@ -184,6 +197,11 @@ const TodaysHabits: React.FC = () => {
                     }`}
                   >
                     {habit.name}
+                    {habit.isTemporary && (
+                      <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                        Temporary
+                      </span>
+                    )}
                   </div>
                   {habit.description && (
                     <div className="text-xs text-muted-foreground mt-1 truncate">
@@ -263,9 +281,7 @@ const TodaysHabits: React.FC = () => {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete "{habit.name}" and all
-                            of its tracked history. This action cannot be
-                            undone.
+                            This will mark "{habit.name}" as deleted. You can restore it later from the Analytics page.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

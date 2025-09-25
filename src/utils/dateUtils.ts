@@ -18,6 +18,16 @@ export interface Habit {
   color?: string;
   createdAt: string; // ISO string
   daysOfWeek?: number[]; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday. If undefined, habit is active on all days
+  // New fields for temporary habits
+  isTemporary?: boolean;
+  durationDays?: number; // Number of days the habit should last
+  endDate?: string; // ISO string for when the temporary habit expires
+  // New fields for soft-deleted habits
+  isDeleted?: boolean;
+  deletedAt?: string; // ISO string for when the habit was deleted
+  // New fields for paused habits
+  isPaused?: boolean;
+  pausedUntil?: string; // ISO string for when the habit pause ends
 }
 
 export interface Completion {
@@ -60,6 +70,27 @@ export const isHabitCompletedOnDate = (
 };
 
 export const isHabitActiveOnDate = (habit: Habit, date: Date): boolean => {
+  // Check if habit is soft-deleted
+  if (habit.isDeleted) {
+    return false;
+  }
+  
+  // Check if habit is paused and the pause is still active
+  if (habit.isPaused && habit.pausedUntil) {
+    const pauseEndDate = parseISO(habit.pausedUntil);
+    if (isBefore(date, pauseEndDate) || isSameDay(date, pauseEndDate)) {
+      return false;
+    }
+  }
+  
+  // Check if habit is temporary and has expired
+  if (habit.isTemporary && habit.endDate) {
+    const habitEndDate = parseISO(habit.endDate);
+    if (isAfter(date, habitEndDate)) {
+      return false;
+    }
+  }
+  
   // If no days are specified, the habit is active on all days
   if (!habit.daysOfWeek || habit.daysOfWeek.length === 0) {
     return true;

@@ -15,16 +15,31 @@ interface HabitStore {
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    daysOfWeek?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ) => Promise<void>;
   updateHabit: (
     id: string,
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    daysOfWeek?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
+  softDeleteHabit: (id: string) => Promise<void>;
+  restoreHabit: (id: string) => Promise<void>;
+  deleteHabitPermanently: (id: string) => Promise<void>;
+  pauseHabit: (id: string, pausedUntil: string) => Promise<void>;
+  unpauseHabit: (id: string) => Promise<void>;
   toggleCompletion: (habitId: string, date?: string) => Promise<void>;
   getCompletionsForDate: (date: string) => Completion[];
   isHabitCompletedOnDate: (habitId: string, date: string) => boolean;
@@ -35,6 +50,7 @@ interface HabitStore {
   getHabitsForDay: (dayOfWeek: number) => Habit[];
   getTotalHabitsCount: () => number;
   getInactiveHabitsCount: (date?: string) => number;
+  getDeletedHabits: () => Habit[];
 }
 
 export const useHabitStore = create<HabitStore>((set, get) => ({
@@ -57,9 +73,9 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  addHabit: async (name, description, color, daysOfWeek) => {
+  addHabit: async (name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil) => {
     try {
-      const id = await db.addHabit(name, description, color, daysOfWeek);
+      const id = await db.addHabit(name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil);
       const newHabit = {
         id,
         name,
@@ -67,6 +83,12 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
         color,
         daysOfWeek,
         createdAt: new Date().toISOString(),
+        isTemporary,
+        durationDays,
+        endDate,
+        isDeleted: false,
+        isPaused,
+        pausedUntil,
       };
       set((state) => ({ habits: [...state.habits, newHabit], error: null }));
     } catch (error) {
@@ -85,13 +107,13 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
     }
   },
 
-  updateHabit: async (id, name, description, color, daysOfWeek) => {
+  updateHabit: async (id, name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil) => {
     try {
-      await db.updateHabit(id, name, description, color, daysOfWeek);
+      await db.updateHabit(id, name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil);
       set((state) => ({
         habits: state.habits.map((habit) =>
           habit.id === id
-            ? { ...habit, name, description, color, daysOfWeek }
+            ? { ...habit, name, description, color, daysOfWeek, isTemporary, durationDays, endDate, isPaused, pausedUntil }
             : habit
         ),
         error: null,
@@ -104,7 +126,52 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
 
   deleteHabit: async (id) => {
     try {
-      await db.deleteHabit(id);
+      await db.softDeleteHabit(id);
+      set((state) => ({
+        habits: state.habits.map((habit) =>
+          habit.id === id ? { ...habit, isDeleted: true, deletedAt: new Date().toISOString() } : habit
+        ),
+        error: null,
+      }));
+    } catch (error) {
+      console.error("Error deleting habit:", error);
+      set({ error: (error as Error).message });
+    }
+  },
+
+  softDeleteHabit: async (id) => {
+    try {
+      await db.softDeleteHabit(id);
+      set((state) => ({
+        habits: state.habits.map((habit) =>
+          habit.id === id ? { ...habit, isDeleted: true, deletedAt: new Date().toISOString() } : habit
+        ),
+        error: null,
+      }));
+    } catch (error) {
+      console.error("Error soft deleting habit:", error);
+      set({ error: (error as Error).message });
+    }
+  },
+
+  restoreHabit: async (id) => {
+    try {
+      await db.restoreHabit(id);
+      set((state) => ({
+        habits: state.habits.map((habit) =>
+          habit.id === id ? { ...habit, isDeleted: false, deletedAt: undefined } : habit
+        ),
+        error: null,
+      }));
+    } catch (error) {
+      console.error("Error restoring habit:", error);
+      set({ error: (error as Error).message });
+    }
+  },
+
+  deleteHabitPermanently: async (id) => {
+    try {
+      await db.deleteHabitPermanently(id);
       set((state) => ({
         habits: state.habits.filter((habit) => habit.id !== id),
         completions: state.completions.filter(
@@ -113,7 +180,37 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
         error: null,
       }));
     } catch (error) {
-      console.error("Error deleting habit:", error);
+      console.error("Error permanently deleting habit:", error);
+      set({ error: (error as Error).message });
+    }
+  },
+
+  pauseHabit: async (id, pausedUntil) => {
+    try {
+      await db.pauseHabit(id, pausedUntil);
+      set((state) => ({
+        habits: state.habits.map((habit) =>
+          habit.id === id ? { ...habit, isPaused: true, pausedUntil } : habit
+        ),
+        error: null,
+      }));
+    } catch (error) {
+      console.error("Error pausing habit:", error);
+      set({ error: (error as Error).message });
+    }
+  },
+
+  unpauseHabit: async (id) => {
+    try {
+      await db.unpauseHabit(id);
+      set((state) => ({
+        habits: state.habits.map((habit) =>
+          habit.id === id ? { ...habit, isPaused: false, pausedUntil: undefined } : habit
+        ),
+        error: null,
+      }));
+    } catch (error) {
+      console.error("Error unpausing habit:", error);
       set({ error: (error as Error).message });
     }
   },
@@ -173,7 +270,7 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
   getActiveHabitsCount: (date = getToday()) => {
     const { habits } = get();
     const currentDate = new Date(date);
-    // Filter habits that are active on the given date
+    // Filter habits that are active on the given date (not deleted, not paused, not expired)
     const activeHabits = habits.filter((habit) =>
       isHabitActiveOnDate(habit, currentDate)
     );
@@ -193,6 +290,11 @@ export const useHabitStore = create<HabitStore>((set, get) => ({
   getTotalHabitsCount: () => {
     const { habits } = get();
     return habits.length;
+  },
+
+  getDeletedHabits: () => {
+    const { habits } = get();
+    return habits.filter((habit) => habit.isDeleted);
   },
 
   getCompletedTodayCount: (date = getToday()) => {

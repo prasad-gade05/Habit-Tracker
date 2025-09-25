@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useHabitStore } from "../stores/habitStore";
 import ColorPicker from "./ColorPicker";
 import { Checkbox } from "@/components/ui/checkbox";
+import { addDays, format } from "date-fns";
 
 interface HabitModalProps {
   open: boolean;
@@ -21,12 +22,22 @@ interface HabitModalProps {
     description?: string;
     color?: string;
     daysOfWeek?: number[]; // Array of day numbers (0-6) where 0 is Sunday
+    isTemporary?: boolean;
+    durationDays?: number;
+    endDate?: string;
+    isPaused?: boolean;
+    pausedUntil?: string;
   } | null;
   onConfirm: (
     name: string,
     description?: string,
     color?: string,
-    daysOfWeek?: number[]
+    daysOfWeek?: number[],
+    isTemporary?: boolean,
+    durationDays?: number,
+    endDate?: string,
+    isPaused?: boolean,
+    pausedUntil?: string
   ) => void;
 }
 
@@ -42,6 +53,10 @@ const HabitModal: React.FC<HabitModalProps> = ({
   const [error, setError] = useState("");
   const [isDaySpecific, setIsDaySpecific] = useState(false);
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const [isTemporary, setIsTemporary] = useState(false);
+  const [durationDays, setDurationDays] = useState(7);
+  const [isPaused, setIsPaused] = useState(false);
+  const [pauseDays, setPauseDays] = useState(7);
 
   const daysOfWeek = [
     { id: 0, name: "Sunday" },
@@ -68,6 +83,14 @@ const HabitModal: React.FC<HabitModalProps> = ({
         setIsDaySpecific(false);
         setSelectedDays([]);
       }
+
+      // Handle temporary habit settings
+      setIsTemporary(habit?.isTemporary || false);
+      setDurationDays(habit?.durationDays || 7);
+
+      // Handle paused habit settings
+      setIsPaused(habit?.isPaused || false);
+      setPauseDays(7); // Default to 7 days pause
     }
   }, [open, habit]);
 
@@ -85,11 +108,37 @@ const HabitModal: React.FC<HabitModalProps> = ({
       return;
     }
 
+    // Calculate endDate for temporary habits
+    let endDate: string | undefined;
+    if (isTemporary) {
+      const today = new Date();
+      const end = addDays(today, durationDays);
+      endDate = format(end, "yyyy-MM-dd");
+    }
+
+    // Calculate pausedUntil for paused habits
+    let pausedUntil: string | undefined;
+    if (isPaused) {
+      const today = new Date();
+      const pausedEnd = addDays(today, pauseDays);
+      pausedUntil = format(pausedEnd, "yyyy-MM-dd");
+    }
+
     // Pass days array only if day-specific is enabled and days are selected
     const daysToSave =
       isDaySpecific && selectedDays.length > 0 ? selectedDays : undefined;
 
-    onConfirm(name, description, color, daysToSave);
+    onConfirm(
+      name,
+      description,
+      color,
+      daysToSave,
+      isTemporary,
+      isTemporary ? durationDays : undefined,
+      endDate,
+      isPaused,
+      pausedUntil
+    );
     resetForm();
     onOpenChange(false);
   };
@@ -101,6 +150,10 @@ const HabitModal: React.FC<HabitModalProps> = ({
     setError("");
     setIsDaySpecific(false);
     setSelectedDays([]);
+    setIsTemporary(false);
+    setDurationDays(7);
+    setIsPaused(false);
+    setPauseDays(7);
   };
 
   const toggleDay = (dayId: number) => {
@@ -131,7 +184,7 @@ const HabitModal: React.FC<HabitModalProps> = ({
         onOpenChange(isOpen);
       }}
     >
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{habit ? "Edit Habit" : "Add New Habit"}</DialogTitle>
         </DialogHeader>
@@ -157,6 +210,70 @@ const HabitModal: React.FC<HabitModalProps> = ({
           </div>
 
           <ColorPicker selectedColor={color} onColorChange={setColor} />
+
+          {/* Temporary habit options */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="temporary-habit"
+                checked={isTemporary}
+                onCheckedChange={(checked) => setIsTemporary(!!checked)}
+              />
+              <label
+                htmlFor="temporary-habit"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Make this a temporary habit
+              </label>
+            </div>
+
+            {isTemporary && (
+              <div className="space-y-2 ml-6">
+                <p className="text-sm text-muted-foreground">
+                  Duration (in days):
+                </p>
+                <Input
+                  type="number"
+                  min="1"
+                  value={durationDays}
+                  onChange={(e) => setDurationDays(Number(e.target.value))}
+                  className="w-32"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Paused habit options */}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="paused-habit"
+                checked={isPaused}
+                onCheckedChange={(checked) => setIsPaused(!!checked)}
+              />
+              <label
+                htmlFor="paused-habit"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Pause this habit initially
+              </label>
+            </div>
+
+            {isPaused && (
+              <div className="space-y-2 ml-6">
+                <p className="text-sm text-muted-foreground">
+                  Pause duration (in days):
+                </p>
+                <Input
+                  type="number"
+                  min="1"
+                  value={pauseDays}
+                  onChange={(e) => setPauseDays(Number(e.target.value))}
+                  className="w-32"
+                />
+              </div>
+            )}
+          </div>
 
           {/* Day-specific options */}
           <div className="space-y-3">
