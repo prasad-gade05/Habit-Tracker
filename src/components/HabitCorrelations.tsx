@@ -5,16 +5,6 @@ import { calculateCorrelation } from "../utils/correlationUtils";
 import { isHabitActiveOnDate } from "../utils/dateUtils";
 import { parseISO } from "date-fns";
 import {
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from "recharts";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -22,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import CorrelationMatrix from "./CorrelationMatrix";
+import CorrelationRadarChart from "./CorrelationRadarChart";
 
 const HabitCorrelations: React.FC = () => {
   const { habits, completions } = useHabitStore();
@@ -33,6 +25,22 @@ const HabitCorrelations: React.FC = () => {
   const hasSufficientData = useMemo(() => {
     return habits.length >= 2 && completions.length > 0;
   }, [habits.length, completions.length]);
+
+  // Get color class based on correlation value
+  const getCorrelationColor = (value: number) => {
+    // Convert correlation value (-1 to 1) to a color
+    if (value === 1) return "bg-blue-500"; // Strong positive correlation
+    if (value >= 0.7) return "bg-blue-400";
+    if (value >= 0.5) return "bg-blue-300";
+    if (value >= 0.3) return "bg-blue-200";
+    if (value >= 0.1) return "bg-blue-100";
+    if (value > -0.1) return "bg-gray-100"; // Near zero correlation
+    if (value > -0.3) return "bg-red-100";
+    if (value > -0.5) return "bg-red-200";
+    if (value > -0.7) return "bg-red-300";
+    if (value > -1) return "bg-red-400";
+    return "bg-red-500"; // Strong negative correlation
+  };
 
   // Calculate correlations between habits
   const { correlationMatrix, habitList, topCorrelations, radarData } =
@@ -217,62 +225,6 @@ const HabitCorrelations: React.FC = () => {
       };
     }, [habits, completions, hasSufficientData, chartMode, selectedHabitId, numHabitsToShow]);
 
-  // Get color class based on correlation value
-  const getCorrelationColor = (value: number) => {
-    // Convert correlation value (-1 to 1) to a color
-    if (value === 1) return "bg-blue-500"; // Strong positive correlation
-    if (value >= 0.7) return "bg-blue-400";
-    if (value >= 0.5) return "bg-blue-300";
-    if (value >= 0.3) return "bg-blue-200";
-    if (value >= 0.1) return "bg-blue-100";
-    if (value > -0.1) return "bg-gray-100"; // Near zero correlation
-    if (value > -0.3) return "bg-red-100";
-    if (value > -0.5) return "bg-red-200";
-    if (value > -0.7) return "bg-red-300";
-    if (value > -1) return "bg-red-400";
-    return "bg-red-500"; // Strong negative correlation
-  };
-
-  // Custom tooltip for radar chart
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-popover border border-border rounded-lg p-3 shadow-lg max-w-xs">
-          <p className="font-medium text-foreground">{label}</p>
-          <p className="text-sm text-muted-foreground mb-2">
-            Correlation strengths
-          </p>
-          <div className="space-y-1 max-h-40 overflow-y-auto">
-            {payload[0].payload &&
-              Object.entries(payload[0].payload)
-                .filter(([key]) => key !== "habit")
-                .map(([key, value]: [string, any]) => {
-                  // Convert back to correlation value (-1 to 1)
-                  const correlationValue = (value as number) / 50 - 1;
-                  return (
-                    <div key={key} className="flex justify-between text-xs">
-                      <span className="text-foreground truncate mr-2">{key}:</span>
-                      <span
-                        className={
-                          correlationValue > 0
-                            ? "text-green-500 font-medium"
-                            : correlationValue < 0
-                            ? "text-red-500 font-medium"
-                            : "text-foreground"
-                        }
-                      >
-                        {correlationValue.toFixed(2)}
-                      </span>
-                    </div>
-                  );
-                })}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
   if (!hasSufficientData) {
     return (
       <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
@@ -424,142 +376,7 @@ const HabitCorrelations: React.FC = () => {
         </div>
       </div>
 
-      {/* Correlation Matrix */}
-      <div className="mb-8">
-        <h3 className="font-medium text-foreground mb-3">Correlation Matrix</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr>
-                <th className="text-left text-xs text-muted-foreground p-2"></th>
-                {habitList.map((habit) => (
-                  <th
-                    key={habit.id}
-                    className="text-center text-xs text-muted-foreground p-2 transform -rotate-45 origin-center"
-                    style={{ minWidth: "40px" }}
-                  >
-                    <div className="flex items-center justify-center">
-                      <span
-                        className="w-2 h-2 rounded-full mr-1"
-                        style={{
-                          backgroundColor: habit.color || "#3B82F6",
-                        }}
-                      ></span>
-                      {habit.name.substring(0, 3)}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {correlationMatrix.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  <td className="text-left text-xs text-muted-foreground p-2">
-                    <div className="flex items-center">
-                      <span
-                        className="w-2 h-2 rounded-full mr-1"
-                        style={{
-                          backgroundColor:
-                            habitList[rowIndex].color || "#3B82F6",
-                        }}
-                      ></span>
-                      {habitList[rowIndex].name.substring(0, 3)}
-                    </div>
-                  </td>
-                  {row.map((value, colIndex) => (
-                    <td
-                      key={colIndex}
-                      className={`text-center p-2 text-xs font-medium ${
-                        rowIndex === colIndex
-                          ? "bg-primary/10"
-                          : Math.abs(value) > 0.5
-                          ? "bg-secondary"
-                          : ""
-                      }`}
-                    >
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center mx-auto ${getCorrelationColor(
-                          value
-                        )}`}
-                      >
-                        {rowIndex !== colIndex ? value.toFixed(1) : "-"}
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Radar Chart */}
-      <div>
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="font-medium text-foreground">
-            {chartMode === "top" 
-              ? "Top Correlations Radar" 
-              : selectedHabitId === "all" 
-                ? "All Habits Correlation Radar" 
-                : `Correlations for ${habitList.find(h => h.id === selectedHabitId)?.name || "Selected Habit"}`}
-          </h3>
-          <div className="text-xs text-muted-foreground">
-            {radarData.length} habits shown
-          </div>
-        </div>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="habit" />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} />
-              {radarData.length > 0 && Object.keys(radarData[0])
-                .filter(key => key !== "habit")
-                .map((dataKey, index) => {
-                  // Find the habit object for this dataKey
-                  const habit = habitList.find(h => h.name === dataKey) || habitList[index % habitList.length];
-                  return (
-                    <Radar
-                      key={index}
-                      name={dataKey}
-                      dataKey={dataKey}
-                      stroke={habit?.color || "#3B82F6"}
-                      fill={habit?.color || "#3B82F6"}
-                      fillOpacity={0.2}
-                      strokeWidth={2}
-                    />
-                  );
-                })}
-              <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                layout="vertical" 
-                verticalAlign="middle" 
-                align="right"
-                content={(props) => {
-                  if (!props.payload || props.payload.length === 0) return null;
-                  return (
-                    <div className="flex flex-col space-y-1 max-h-40 overflow-y-auto">
-                      {props.payload.map((entry, index) => (
-                        <div key={`item-${index}`} className="flex items-center text-xs">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-2" 
-                            style={{ backgroundColor: entry.color }}
-                          />
-                          <span className="text-foreground truncate max-w-[100px]">{entry.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="mt-2 text-xs text-muted-foreground">
-          <p>Radar chart showing correlation strengths between habits (0-100 scale)</p>
-          <p className="mt-1">Values closer to 100 indicate stronger positive correlations</p>
-        </div>
-      </div>
+      {/* Correlation Matrix and Radar Chart will be rendered in AnalyticsPage directly below PatternRecognition */}
     </div>
   );
 };
