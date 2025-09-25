@@ -5,7 +5,7 @@ import CalendarView from "../components/CalendarView";
 import SevenDayTrend from "../components/SevenDayTrend";
 import WeeklyPatterns from "../components/WeeklyPatterns";
 import NavigationModule from "../components/NavigationModule";
-import QuickActionsModule from "../components/QuickActionsModule";
+import MinimalTodaysProgress from "../components/MinimalTodaysProgress";
 import MonthlyCompletionHeatmap from "../components/MonthlyCompletionHeatmap";
 import HabitStreakVisualization from "../components/HabitStreakVisualization";
 import { parseISO } from "date-fns";
@@ -46,9 +46,9 @@ const CalendarPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Quick Actions Module */}
+      {/* Minimal Today's Progress Module */}
       <div className="mb-5">
-        <QuickActionsModule />
+        <MinimalTodaysProgress />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
