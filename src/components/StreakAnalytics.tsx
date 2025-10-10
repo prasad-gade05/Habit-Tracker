@@ -142,60 +142,41 @@ const StreakAnalytics: React.FC = () => {
   }, [habits, completions]);
 
   return (
-    <div className="bg-card rounded-lg p-6 shadow-sm border border-border">
-      <h2 className="text-xl font-semibold text-foreground mb-6">
-        Streak Analytics
-      </h2>
-
-      <div className="space-y-4">
-        {habitStreaks.length > 0 ? (
-          habitStreaks.map((habit) => (
-            <div
-              key={habit.id}
-              className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg"
-            >
-              <div className="flex-1">
-                <div className="font-medium text-foreground">{habit.name}</div>
-                {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Active:{" "}
-                    {habit.daysOfWeek
-                      .map(
-                        (day) =>
-                          ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]
-                      )
-                      .join(", ")}
-                  </div>
-                )}
+    <div className="space-y-3">
+      {habitStreaks.length > 0 ? (
+        habitStreaks
+          .sort((a, b) => b.currentStreak - a.currentStreak)
+          .slice(0, 3)
+          .map((habit) => (
+          <div
+            key={habit.id}
+            className="flex items-center justify-between p-3 bg-secondary/20 rounded-md"
+          >
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-foreground text-sm truncate">{habit.name}</div>
+            </div>
+            <div className="flex items-center space-x-3 text-sm">
+              <div className="flex items-center">
+                <Flame className="w-3 h-3 text-orange-500 mr-1" />
+                <span className="font-medium">{habit.currentStreak}</span>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center">
-                  <Flame className="w-4 h-4 text-orange-500 mr-1" />
-                  <span className="text-foreground font-medium">
-                    {habit.currentStreak}
-                  </span>
-                  <span className="text-muted-foreground text-sm ml-1">
-                    current
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <Trophy className="w-4 h-4 text-yellow-500 mr-1" />
-                  <span className="text-foreground font-medium">
-                    {habit.longestStreak}
-                  </span>
-                  <span className="text-muted-foreground text-sm ml-1">
-                    longest
-                  </span>
-                </div>
+              <div className="flex items-center">
+                <Trophy className="w-3 h-3 text-yellow-500 mr-1" />
+                <span className="font-medium">{habit.longestStreak}</span>
               </div>
             </div>
-          ))
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No habits to analyze yet.</p>
           </div>
-        )}
-      </div>
+        ))
+      ) : (
+        <div className="text-center py-4 text-muted-foreground text-sm">
+          <p>No habits to analyze yet.</p>
+        </div>
+      )}
+      {habitStreaks.length > 3 && (
+        <div className="text-center text-xs text-muted-foreground">
+          Showing top 3 habits by current streak
+        </div>
+      )}
     </div>
   );
 };

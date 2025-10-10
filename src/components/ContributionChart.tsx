@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useEffect } from "react";
 import { useHabitStore } from "../stores/habitStore";
-import { useNavigate } from "react-router-dom"; // Added import
 import {
   getLast365Days,
   getCompletionPercentageForDate,
@@ -15,7 +14,6 @@ import { format, parseISO, isSameDay } from "date-fns";
 
 const ContributionChart: React.FC = () => {
   const { habits, completions } = useHabitStore();
-  const navigate = useNavigate(); // Added navigate hook
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLDivElement>(null);
 
@@ -53,10 +51,10 @@ const ContributionChart: React.FC = () => {
     return "bg-green-500";
   };
 
-  // Handle date click to navigate to calendar page
+  // Handle date click - in single page app, we could show details inline
   const handleDateClick = (date: string) => {
-    // Navigate to the calendar page with the selected date
-    navigate(`/calendar?date=${date}`);
+    // For now, just log the date. In future could show date details in modal
+    console.log(`Clicked date: ${date}`);
   };
 
   // Group days into weeks (7 rows for days of week, 53 columns for weeks)

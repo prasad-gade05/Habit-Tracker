@@ -47,6 +47,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
     return isBefore(todayDate, pauseEndDate) || isToday(pauseEndDate);
   };
 
+  // Check if a temporary habit has expired
+  const isHabitExpired = (habit: Habit): boolean => {
+    if (!habit.isTemporary || !habit.endDate) return false;
+    const endDate = parseISO(habit.endDate);
+    const todayDate = new Date();
+    return isBefore(endDate, todayDate);
+  };
+
   // Get completions for the selected date
   const completionsForSelectedDate = selectedDate
     ? completions.filter((c) => c.date === selectedDate)
@@ -157,16 +165,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                   : false;
                 const habitCompleted = isHabitCompleted(habit.id);
                 const isPaused = isHabitPaused(habit);
+                const isExpired = isHabitExpired(habit);
                 
                 // Check if habit is deleted
                 const isHabitDeleted = habit.isDeleted;
+                
+                // Determine if habit should be disabled
+                const isHabitDisabled = !isHabitActiveOnSelectedDate || !selectedDate || isHabitDeleted || isPaused || isExpired;
 
                 return (
                   <div
                     key={habit.id}
                     className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-secondary/30 transition-colors ${
                       isHabitDeleted ? "opacity-60 bg-muted" : ""
-                    } ${isPaused ? "opacity-70 bg-blue-50 dark:bg-blue-900/20" : ""}`}
+                    } ${isPaused ? "opacity-70 bg-blue-50 dark:bg-blue-900/20" : ""} ${
+                      isExpired ? "opacity-70 bg-red-50 dark:bg-red-900/20" : ""
+                    }`}
                     style={{
                       borderLeft: habit.color
                         ? `3px solid ${habit.color}`
@@ -177,18 +191,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                       id={habit.id}
                       checked={habitCompleted}
                       onCheckedChange={() => {
-                        // Only allow toggling for active habits that are not deleted and not paused
-                        if (isHabitActiveOnSelectedDate && selectedDate && !isHabitDeleted && !isPaused) {
+                        // Only allow toggling for active habits that are not disabled
+                        if (!isHabitDisabled) {
                           handleToggleCompletion(habit.id);
                         }
                       }}
-                      disabled={!isHabitActiveOnSelectedDate || !selectedDate || isHabitDeleted || isPaused}
+                      disabled={isHabitDisabled}
                     />
                     <div className="flex-1">
                       <label
                         htmlFor={habit.id}
                         className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${
-                          !isHabitActiveOnSelectedDate || isHabitDeleted || isPaused
+                          isHabitDisabled
                             ? "text-gray-500 dark:text-gray-400"
                             : ""
                         }`}
@@ -211,6 +225,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                               Paused
                             </span>
                           )}
+                          {isExpired && (
+                            <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                              Expired
+                            </span>
+                          )}
+                          {habit.isTemporary && !isExpired && (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                              Temporary
+                            </span>
+                          )}
                         </div>
                         {habit.description && (
                           <div className="text-xs text-muted-foreground mt-1">
@@ -225,6 +249,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ initialDate }) => {
                         {isPaused && habit.pausedUntil && (
                           <div className="text-xs text-muted-foreground mt-1">
                             Paused until: {format(parseISO(habit.pausedUntil), "MMM d, yyyy")}
+                          </div>
+                        )}
+                        {isExpired && habit.endDate && (
+                          <div className="text-xs text-red-600 mt-1">
+                            Expired on: {format(parseISO(habit.endDate), "MMM d, yyyy")}
+                          </div>
+                        )}
+                        {habit.isTemporary && habit.endDate && !isExpired && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Expires on: {format(parseISO(habit.endDate), "MMM d, yyyy")}
                           </div>
                         )}
                         {isHabitDeleted && (

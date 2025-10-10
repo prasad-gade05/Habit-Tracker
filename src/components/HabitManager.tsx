@@ -96,7 +96,7 @@ const HabitManager: React.FC = () => {
             return (
               <div
                 key={habit.id}
-                className={`flex items-center justify-between p-4 rounded-lg border border-border hover:bg-secondary/30 transition-colors ${
+                className={`flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 p-4 rounded-lg border border-border hover:bg-secondary/30 transition-colors ${
                   isExpired ? "opacity-70 bg-muted" : ""
                 } ${isPaused ? "opacity-70 bg-blue-50 dark:bg-blue-900/20" : ""}`}
                 style={{
@@ -105,25 +105,25 @@ const HabitManager: React.FC = () => {
                     : "4px solid #3B82F6",
                 }}
               >
-                <div>
-                  <div className="flex items-center space-x-2 font-medium text-foreground">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 font-medium text-foreground flex-wrap gap-y-1">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: habit.color || "#3B82F6" }}
                     />
-                    <span>{habit.name}</span>
+                    <span className="truncate">{habit.name}</span>
                     {habit.isTemporary && (
-                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full flex-shrink-0">
                         Temporary
                       </span>
                     )}
                     {isExpired && (
-                      <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                      <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full flex-shrink-0">
                         Expired
                       </span>
                     )}
                     {isPaused && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex-shrink-0">
                         Paused
                       </span>
                     )}
@@ -155,39 +155,42 @@ const HabitManager: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2 justify-end lg:justify-start lg:flex-nowrap lg:flex-shrink-0">
                   {isPaused ? (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleUnpauseHabit(habit.id)}
+                      className="min-w-0 flex-shrink-0"
                     >
-                      <Play className="h-4 w-4 mr-2" />
-                      Resume
+                      <Play className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Resume</span>
                     </Button>
                   ) : (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handlePauseHabit(habit.id)}
+                      className="min-w-0 flex-shrink-0"
                     >
-                      <Pause className="h-4 w-4 mr-2" />
-                      Pause
+                      <Pause className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Pause</span>
                     </Button>
                   )}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => startEditing(habit)}
+                    className="min-w-0 flex-shrink-0"
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
+                    <Edit className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Edit</span>
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4 mr-2 text-destructive" />
-                        <span className="text-destructive">Delete</span>
+                      <Button variant="outline" size="sm" className="min-w-0 flex-shrink-0">
+                        <Trash2 className="h-4 w-4 sm:mr-2 text-destructive" />
+                        <span className="text-destructive hidden sm:inline">Delete</span>
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>

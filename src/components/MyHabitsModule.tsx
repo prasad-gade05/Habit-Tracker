@@ -44,6 +44,14 @@ const MyHabitsModule: React.FC = () => {
     return isBefore(todayDate, pauseEndDate) || isToday(pauseEndDate);
   };
 
+  // Check if a temporary habit has expired
+  const isHabitExpired = (habit: Habit): boolean => {
+    if (!habit.isTemporary || !habit.endDate) return false;
+    const endDate = parseISO(habit.endDate);
+    const todayDate = new Date();
+    return isBefore(endDate, todayDate);
+  };
+
   const handleAddHabit = (
     name: string,
     description?: string,
@@ -109,115 +117,192 @@ const MyHabitsModule: React.FC = () => {
   const activeHabits = habits.filter(habit => !habit.isDeleted);
 
   return (
-    <div className="bg-card rounded-xl p-5 shadow-sm border border-border transition-all duration-300 hover:shadow-md">
-      <div className="flex justify-between items-center mb-5">
-        <h2 className="text-lg font-semibold text-foreground">My Habits</h2>
+    <div className="bg-card rounded-lg p-4 shadow-sm border border-border">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-base font-semibold text-foreground">My Habits</h2>
         <Button
           onClick={() => setIsModalOpen(true)}
-          className="bg-accent text-accent-foreground h-8 px-3 text-xs"
+          className="bg-accent text-accent-foreground h-7 px-2 text-xs"
         >
           <Plus className="w-3 h-3 mr-1" />
-          Add Habit
+          Add
         </Button>
       </div>
 
       {activeHabits.length > 0 ? (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {activeHabits.map((habit: Habit) => {
             const isCompleted = isHabitCompletedOnDate(habit.id, today);
-            // Check if habit is active today
             const isHabitActiveToday = isHabitActiveOnDate(
               habit,
               parseISO(today)
             );
             const isPaused = isHabitPaused(habit);
-            const streak = calculateStreak(habit); // Updated to pass the habit object
+            const isExpired = isHabitExpired(habit);
+            const streak = calculateStreak(habit);
+            const isDisabled = !isHabitActiveToday || isPaused || isExpired;
 
             return (
               <div
                 key={habit.id}
-                className={`rounded-lg p-4 group transition-all duration-200 hover:bg-secondary/40 ${
-                  isPaused ? "bg-gray-100 dark:bg-gray-800 opacity-80" : "bg-secondary/30"
+                className={`relative rounded-lg p-4 group transition-all duration-200 hover:shadow-md ${
+                  isPaused || isExpired 
+                    ? "bg-gray-100 dark:bg-gray-800 opacity-70" 
+                    : "bg-secondary/20 hover:bg-secondary/30"
                 }`}
                 style={{
-                  borderLeft: habit.color
-                    ? `4px solid ${habit.color}`
-                    : "4px solid #3B82F6",
+                  border: `2px solid ${habit.color || "#3B82F6"}`,
+                  backgroundColor: isCompleted 
+                    ? `${habit.color || "#3B82F6"}15` 
+                    : undefined,
                 }}
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start space-x-3">
-                    {/* Habit icon (using a placeholder) */}
+                {/* Status indicators */}
+                <div className="absolute top-2 right-2 flex gap-1">
+                  {isPaused && (
+                    <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
+                      Paused
+                    </span>
+                  )}
+                  {isExpired && (
+                    <span className="text-xs bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full">
+                      Expired
+                    </span>
+                  )}
+                  {habit.isTemporary && !isExpired && (
+                    <span className="text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full">
+                      Temp
+                    </span>
+                  )}
+                </div>
+
+                {/* Main content */}
+                <div className="space-y-3 pr-8">
+                  {/* Habit icon and name */}
+                  <div className="flex items-center space-x-3">
                     <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{
-                        backgroundColor: habit.color
-                          ? `${habit.color}20`
-                          : "#3B82F620",
+                        backgroundColor: habit.color || "#3B82F6",
                       }}
                     >
-                      <div
-                        className="w-5 h-5 rounded"
-                        style={{
-                          backgroundColor: habit.color || "#3B82F6",
-                        }}
-                      ></div>
+                      <div className="w-5 h-5 rounded bg-white opacity-90"></div>
                     </div>
-
-                    <div>
-                      <div className="font-medium text-foreground text-sm">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground text-sm truncate">
                         {habit.name}
-                        {habit.isTemporary && (
-                          <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                            Temporary
-                          </span>
-                        )}
-                        {isPaused && (
-                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                            Paused
-                          </span>
-                        )}
-                      </div>
+                      </h3>
                       {habit.daysOfWeek && habit.daysOfWeek.length > 0 && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Active:{" "}
+                        <div className="text-xs text-muted-foreground">
                           {habit.daysOfWeek
-                            .map(
-                              (day) =>
-                                [
-                                  "Sun",
-                                  "Mon",
-                                  "Tue",
-                                  "Wed",
-                                  "Thu",
-                                  "Fri",
-                                  "Sat",
-                                ][day]
-                            )
-                            .join(", ")}
+                            .map((day) => ["S", "M", "T", "W", "T", "F", "S"][day])
+                            .join(" ")}
                         </div>
                       )}
-                      {isPaused && habit.pausedUntil && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Paused until: {format(parseISO(habit.pausedUntil), "MMM d, yyyy")}
-                        </div>
-                      )}
-                      {habit.isTemporary && habit.endDate && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Expires: {format(parseISO(habit.endDate), "MMM d, yyyy")}
-                        </div>
-                      )}
-                      <div className="text-xs bg-accent/30 text-accent-foreground px-2 py-1 rounded mt-1 inline-block">
-                        {streak} day{streak !== 1 ? "s" : ""} streak
-                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  {/* Streak and info */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs bg-accent/30 text-accent-foreground px-2 py-1 rounded-full">
+                        {streak}d streak
+                      </span>
+                      {isCompleted && (
+                        <span className="text-xs text-green-600 font-medium">
+                          ✓ Done
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Date info */}
+                  {isPaused && habit.pausedUntil && (
+                    <div className="text-xs text-muted-foreground">
+                      Until {format(parseISO(habit.pausedUntil), "MMM d")}
+                    </div>
+                  )}
+                  {isExpired && habit.endDate && (
+                    <div className="text-xs text-red-600">
+                      Expired {format(parseISO(habit.endDate), "MMM d")}
+                    </div>
+                  )}
+                  {habit.isTemporary && habit.endDate && !isExpired && (
+                    <div className="text-xs text-muted-foreground">
+                      Ends {format(parseISO(habit.endDate), "MMM d")}
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center space-x-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setEditingHabit(habit);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          if (isPaused) {
+                            unpauseHabit(habit.id);
+                          } else {
+                            const until = new Date();
+                            until.setDate(until.getDate() + 7);
+                            pauseHabit(habit.id, until.toISOString().split("T")[0]);
+                          }
+                        }}
+                      >
+                        {isPaused ? (
+                          <Play className="w-3 h-3" />
+                        ) : (
+                          <Pause className="w-3 h-3" />
+                        )}
+                      </Button>
+
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-red-600"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Habit</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{habit.name}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteHabit(habit.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+
                     <Button
                       size="sm"
                       variant={isCompleted ? "default" : "outline"}
-                      className={`h-7 px-2 text-xs ${
+                      className={`h-8 px-3 text-xs font-medium ${
                         isCompleted
                           ? "text-white"
                           : "border-current hover:bg-current/10"
@@ -230,85 +315,21 @@ const MyHabitsModule: React.FC = () => {
                         color: isCompleted ? "white" : habit.color || "#3B82F6",
                       }}
                       onClick={() => {
-                        // Only allow toggling for active habits
-                        if (isHabitActiveToday && !isPaused) {
+                        if (!isDisabled) {
                           handleToggleCompletion(habit.id);
                         }
                       }}
-                      disabled={!isHabitActiveToday || isPaused}
+                      disabled={isDisabled}
                     >
                       {isCompleted ? (
                         <>
                           <Check className="w-3 h-3 mr-1" />
-                          Completed
+                          Done
                         </>
                       ) : (
-                        "Complete"
+                        "Do It"
                       )}
                     </Button>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center mt-3">
-                  <div className="text-xs text-muted-foreground">
-                    Today's Progress
-                  </div>
-                  <div className="flex space-x-1">
-                    {isPaused ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
-                        onClick={() => handleUnpauseHabit(habit.id)}
-                      >
-                        <Play className="h-3 w-3" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
-                        onClick={() => handlePauseHabit(habit.id)}
-                      >
-                        <Pause className="h-3 w-3" />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
-                      onClick={() => handleEditHabit(habit)}
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 opacity-70 hover:opacity-100"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will mark "{habit.name}" as deleted. You can restore it later from the Analytics page.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteHabit(habit.id)}
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Confirm Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
                   </div>
                 </div>
               </div>

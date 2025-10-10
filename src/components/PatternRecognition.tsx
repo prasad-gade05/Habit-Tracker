@@ -160,72 +160,44 @@ const PatternRecognition: React.FC = () => {
         Pattern Recognition
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="space-y-4">
         <div className="bg-secondary/30 rounded-lg p-4">
-          <h3 className="font-medium text-foreground mb-3">Weekly Patterns</h3>
-          <div className="space-y-2">
-            {Object.entries(weeklyPatterns.percentages).map(
-              ([day, percentage]) => (
-                <div key={day} className="flex items-center">
-                  <div className="w-24 text-sm text-muted-foreground">
-                    {day.substring(0, 3)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full"
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="w-10 text-right text-sm text-foreground">
-                    {percentage}%
-                  </div>
-                </div>
-              )
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="bg-secondary/30 rounded-lg p-4">
-            <h3 className="font-medium text-foreground mb-2">
-              Weekend vs Weekday
-            </h3>
-            <div className="flex justify-between">
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {weekendWeekdayStats.weekendAverage}%
-                </div>
-                <div className="text-sm text-muted-foreground">Weekends</div>
+          <h3 className="font-medium text-foreground mb-2">
+            Weekend vs Weekday Performance
+          </h3>
+          <div className="flex justify-between">
+            <div>
+              <div className="text-2xl font-bold text-foreground">
+                {weekendWeekdayStats.weekendAverage}%
               </div>
-              <div>
-                <div className="text-2xl font-bold text-foreground">
-                  {weekendWeekdayStats.weekdayAverage}%
-                </div>
-                <div className="text-sm text-muted-foreground">Weekdays</div>
+              <div className="text-sm text-muted-foreground">Weekends</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-foreground">
+                {weekendWeekdayStats.weekdayAverage}%
               </div>
+              <div className="text-sm text-muted-foreground">Weekdays</div>
             </div>
           </div>
         </div>
-      </div>
 
-      {insights.length > 0 && (
-        <div className="bg-secondary/30 rounded-lg p-4">
-          <h3 className="font-medium text-foreground mb-3 flex items-center">
-            <Lightbulb className="w-4 h-4 mr-2 text-yellow-500" />
-            Insights
-          </h3>
-          <ul className="space-y-2">
-            {insights.map((insight, index) => (
-              <li key={index} className="text-foreground flex">
-                <span className="mr-2">•</span>
-                <span>{insight}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        {insights.length > 0 && (
+          <div className="bg-secondary/30 rounded-lg p-4">
+            <h3 className="font-medium text-foreground mb-3 flex items-center">
+              <Lightbulb className="w-4 h-4 mr-2 text-yellow-500" />
+              Insights
+            </h3>
+            <ul className="space-y-2">
+              {insights.map((insight, index) => (
+                <li key={index} className="text-foreground flex">
+                  <span className="mr-2">•</span>
+                  <span>{insight}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -103,12 +103,11 @@ const WeeklyPatterns: React.FC = () => {
             <div className="flex-1 ml-2">
               <div className="w-full bg-secondary rounded-full h-2">
                 <div
-                  className={`h-2 rounded-full ${
-                    day.dayName === bestDay.dayName
-                      ? "bg-accent"
-                      : "bg-green-500"
-                  }`}
-                  style={{ width: `${day.percentage}%` }}
+                  className="h-2 rounded-full bg-primary"
+                  style={{ 
+                    width: `${Math.max(day.percentage, 2)}%`,
+                    minWidth: day.percentage > 0 ? '8px' : '0px'
+                  }}
                 ></div>
               </div>
             </div>
