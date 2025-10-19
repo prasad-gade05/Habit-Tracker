@@ -1,8 +1,6 @@
-# Habit Tracker
+# Habit Tracker - [Demo](https://prasad-gade05.github.io/Habit-Tracker/)
 
 A privacy-first, client-side habit tracking application built with modern web technologies. All data is stored locally in your browser using IndexedDB.
-
-**[Live Demo](https://prasad-gade05.github.io/Habit-Tracker/)**
 
 ## ✨ Features
 
