@@ -2,7 +2,7 @@
 
 A privacy-first, client-side habit tracking application built with modern web technologies. All data is stored locally in your browser using IndexedDB.
 
-## ✨ Features
+## Features
 
 - **Privacy First**: All your data is stored locally in your browser. Nothing is ever sent to a server.
 - **Minimal & Clean Design**: A distraction-free interface that helps you focus on building your habits.
@@ -23,7 +23,7 @@ A privacy-first, client-side habit tracking application built with modern web te
   - Delete all your data with a single click.
 - **Dark & Light Theme**: Switch between dark and light themes to match your preference.
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Framework**: [React 19](https://react.dev/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
@@ -36,7 +36,7 @@ A privacy-first, client-side habit tracking application built with modern web te
 - **Date & Time**: [date-fns](https://date-fns.org/)
 - **Icons**: [Lucide React](https://lucide.dev/guide/packages/lucide-react)
 
-## 🏁 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -73,7 +73,7 @@ A privacy-first, client-side habit tracking application built with modern web te
   pnpm deploy
   ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -85,16 +85,6 @@ src/
 ├── utils/          # Utility functions
 └── styles/         # Global styles
 ```
-
-## 🤝 Contributing
-
-Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
-
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a pull request.
 
 ## 📄 License
 
