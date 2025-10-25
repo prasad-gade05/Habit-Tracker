@@ -23,19 +23,6 @@ A privacy-first, client-side habit tracking application built with modern web te
   - Delete all your data with a single click.
 - **Dark & Light Theme**: Switch between dark and light themes to match your preference.
 
-## Tech Stack
-
-- **Framework**: [React 19](https://react.dev/)
-- **Build Tool**: [Vite](https://vitejs.dev/)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **UI**: [shadcn/ui](https://ui.shadcn.com/) & [Tailwind CSS](https://tailwindcss.com/)
-- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
-- **Local Database**: [Dexie.js](https://dexie.org/) (IndexedDB wrapper)
-- **Routing**: [React Router](https://reactrouter.com/)
-- **Charts**: [Recharts](https://recharts.org/)
-- **Date & Time**: [date-fns](https://date-fns.org/)
-- **Icons**: [Lucide React](https://lucide.dev/guide/packages/lucide-react)
-
 ## Getting Started
 
 ### Prerequisites
@@ -72,20 +59,3 @@ A privacy-first, client-side habit tracking application built with modern web te
   ```bash
   pnpm deploy
   ```
-
-## Project Structure
-
-```
-src/
-├── components/     # Reusable UI components
-├── hooks/          # Custom React hooks
-├── lib/            # Utility libraries and database setup (db.ts)
-├── pages/          # Page components for different routes
-├── stores/         # Zustand store for global state management
-├── utils/          # Utility functions
-└── styles/         # Global styles
-```
-
-## 📄 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
