@@ -31,6 +31,7 @@ const SimpleHabitCorrelations: React.FC = () => {
     if (habits.length < 2) {
       return {
         insights: [],
+        correlations: [],
         hasData: false,
         summary: "Need at least 2 habits to find patterns."
       };
@@ -69,6 +70,7 @@ const SimpleHabitCorrelations: React.FC = () => {
     if (habitData.length < 2) {
       return {
         insights: [],
+        correlations: [],
         hasData: false,
         summary: "Not enough data yet. Keep tracking for a few more days!"
       };

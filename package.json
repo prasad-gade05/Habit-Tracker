@@ -9,7 +9,10 @@
     "lint": "eslint --quiet ./src",
     "preview": "vite preview",
     "predeploy": "pnpm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npx gh-pages -d dist",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -75,21 +78,26 @@
     "@metagptx/vite-plugin-source-locator": "latest",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/typography": "^0.5.15",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^22.5.5",
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.8",
     "@vitejs/plugin-react-swc": "^3.5.0",
+    "@vitest/ui": "^4.0.8",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "gh-pages": "^6.3.0",
     "globals": "^15.9.0",
+    "jsdom": "^27.2.0",
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
+    "vite": "^5.4.1",
+    "vitest": "^4.0.8"
   }
 }
